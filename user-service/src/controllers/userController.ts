@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import { UserService } from '../services/userService'; // Import the user service
+// Adjust the path based on your file structure
+import { IUser } from '../models/User';
+
 
 const userService = new UserService(); // Instantiate the user service
 
