@@ -1,7 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import userRoutes from './routes/cost_estimate-routes';
+import costRoutes from './routes/cost_estimate-routes';
 
 
 // Initialize environment variables
@@ -14,7 +14,7 @@ const app = express();
 app.use(express.json());
 
 // Routes
-app.use('/api', userRoutes);
+app.use('/api', costRoutes);
 
 // Port configuration
 const PORT = process.env.PORT || 3002;
