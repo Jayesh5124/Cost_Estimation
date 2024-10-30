@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import {
   Box,
@@ -31,18 +29,22 @@ const RegistrationPage: React.FC = () => {
     setSuccess('');
 
     try {
-      const response = await axios.post('http://localhost:3001/api/users', {
+      const endpoint = userType === 'user' 
+        ? 'http://localhost:3001/api/users'
+        : 'http://localhost:3002/api/constructors/register';
+
+      const response = await axios.post(endpoint, {
         name,
         email,
         password,
-        userType,
       });
-      setSuccess('Registration successful!'); // Set success message
+
+      setSuccess('Registration successful!');
       console.log(response.data);
-      // Optionally navigate to another page after successful registration
-      navigate('/login'); // Redirect to login page (adjust as needed)
-    } catch (err) {
-      setError('Registration failed. Please try again.'); // Set error message
+      navigate('/login');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
+      setError(errorMessage);
       console.error(err);
     }
   };

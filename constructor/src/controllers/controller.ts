@@ -1,124 +1,85 @@
 import { Request, Response } from 'express';
-import Constructor, { IConstructor } from '../models/constructorSchema';
-import jwt from 'jsonwebtoken';
+import Constructor from '../models/constructorSchema';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-// Helper function for consistent responses
 const sendResponse = (res: Response, status: number, data: any) => {
   res.status(status).json(data);
 };
 
-// Get user by ID
-export const getConstructor = async (req: Request, res: Response) => {
-  try {
-    const constructor = await Constructor.findById(req.params.id).select('-password');
-    if (!constructor) {
-      return sendResponse(res, 404, { error: 'Constructor not found' });
-    }
-    sendResponse(res, 200, constructor);
-  } catch (error) {
-    sendResponse(res, 500, { error: 'Error fetching constructor' });
-  }
-};
-
-// Create a new user
 export const createConstructor = async (req: Request, res: Response) => {
   try {
-    const { email, password, createdAt, ...otherData } = req.body;
-    
-    // Add debug logging
-    console.log('Received registration request:', {
-      email: email,
-      hasPassword: !!password,
-      createdAt,
-      otherData
-    });
+    // const { email, password, name, consid } = req.body;
+    const { email, password, name } = req.body;
 
-    // Validate required fields
-    if (!email?.trim() || !password?.trim()) {
-      return sendResponse(res, 400, { 
-        error: 'Email and password are required',
-        debug: { 
-          emailReceived: email,
-          passwordReceived: !!password
-        }
-      });
+    if (!email?.trim() || !password?.trim() || !name?.trim()) {
+      return sendResponse(res, 400, { error: 'consid, name, email and password are required' });
     }
 
-    // Format the date properly
-    let formattedDate;
-    try {
-      if (createdAt) {
-        // Parse the date string (assuming format DD-MM-YY)
-        const [day, month, year] = createdAt.split('-');
-        formattedDate = new Date(`20${year}-${month}-${day}`).toISOString();
-      } else {
-        formattedDate = new Date().toISOString();
-      }
-    } catch (dateError) {
-      return sendResponse(res, 400, { 
-        error: 'Invalid date format. Please use DD-MM-YY format',
-        debug: { receivedDate: createdAt }
-      });
-    }
+    // const [existingEmail, existingconsid] = await Promise.all([
+    const existingEmail = await Constructor.findOne({ email });
+      // Constructor.findOne({ consid })
 
-    // Check if email already exists
-    const existingUser = await Constructor.findOne({ email });
-    if (existingUser) {
+    if (existingEmail) {
       return sendResponse(res, 400, { error: 'Email already registered' });
     }
+    // if (existingconsid) {
+    //   return sendResponse(res, 400, { error: 'consid already exists' });
+    // }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await Constructor.create({
-      ...otherData,
+      // consid,
+      name,
       email,
-      password: hashedPassword,
-      createdAt: formattedDate
+      password: hashedPassword
     });
 
-    const token = jwt.sign({ id: newUser._id }, JWT_SECRET);
     const userWithoutPassword = { ...newUser.toObject(), password: undefined };
-    
-    sendResponse(res, 201, { constructor: userWithoutPassword, token });
-  } catch (error) {
-    console.error('Error creating constructor:', {
-      error: error instanceof Error ? error.message : error,
-      stack: error instanceof Error ? error.stack : undefined
-    });
-    
+    sendResponse(res, 201, userWithoutPassword);
+  } catch (error: any) {
+    console.error('Error details:', error);
     sendResponse(res, 500, { 
       error: 'Error creating user',
-      details: error instanceof Error ? error.message : 'Unknown error occurred'
+      details: error.message
     });
   }
 };
 
-// Get all listings
+export const loginConstructor = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    
+    const user = await Constructor.findOne({ email });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return sendResponse(res, 401, { error: 'Invalconsid credentials' });
+    }
+    
+    const userWithoutPassword = { ...user.toObject(), password: undefined };
+    sendResponse(res, 200, userWithoutPassword);
+  } catch (error) {
+    sendResponse(res, 500, { error: 'Error logging in' });
+  }
+};
+
+export const getConstructor = async (req: Request, res: Response) => {
+  try {
+    const user = await Constructor.findOne({ consid: req.params.consid }).select('-password');
+    if (!user) return sendResponse(res, 404, { error: 'User not found' });
+    sendResponse(res, 200, user);
+  } catch (error) {
+    sendResponse(res, 500, { error: 'Error fetching user' });
+  }
+};
+
 export const getListings = async (_req: Request, res: Response) => {
   try {
-    const constructors = await Constructor.find().select('-password');
-    sendResponse(res, 200, constructors);
+    const users = await Constructor.find().select('-password');
+    sendResponse(res, 200, users);
   } catch (error) {
     sendResponse(res, 500, { error: 'Error fetching listings' });
   }
 };
 
-// Get project by ID
-export const getViewProject = async (req: Request, res: Response) => {
-  try {
-    const project = await Constructor.findById(req.params.id).select('-password');
-    if (!project) {
-      return sendResponse(res, 404, { error: 'Project not found' });
-    }
-    sendResponse(res, 200, project);
-  } catch (error) {
-    sendResponse(res, 500, { error: 'Error fetching project' });
-  }
-};
-
-// Get reports
 export const getReports = async (_req: Request, res: Response) => {
   try {
     const reports = await Constructor.find().select('estimations');
@@ -128,37 +89,21 @@ export const getReports = async (_req: Request, res: Response) => {
   }
 };
 
-// Get dashboard data
 export const getDashboard = async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user.id;
-    const userData = await Constructor.findById(userId).select('-password');
-    sendResponse(res, 200, userData);
-  } catch (error) {
-    sendResponse(res, 500, { error: 'Error fetching dashboard data' });
-  }
+    try {
+        // Add your dashboard logic here
+        res.status(200).json({ message: "Dashboard data" });
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+    }
 };
 
-// Login
-export const loginConstructor = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    
-    const constructor = await Constructor.findOne({ email });
-    if (!constructor) {
-      return sendResponse(res, 401, { error: 'Invalid login credentials' });
+export const getViewProject = async (req: Request, res: Response) => {
+    try {
+        const projectconsid = req.params.consid;
+        // Add your project view logic here
+        res.status(200).json({ message: "Project details retrieved" });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to retrieve project details" });
     }
-    
-    const isMatch = await bcrypt.compare(password, constructor.password);
-    if (!isMatch) {
-      return sendResponse(res, 401, { error: 'Invalid login credentials' });
-    }
-    
-    const token = jwt.sign({ id: constructor._id }, JWT_SECRET);
-    const constructorWithoutPassword = { ...constructor.toObject(), password: undefined };
-    
-    sendResponse(res, 200, { constructor: constructorWithoutPassword, token });
-  } catch (error) {
-    sendResponse(res, 500, { error: 'Error logging in' });
-  }
 };

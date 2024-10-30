@@ -242,4 +242,7 @@ const doughChart = async (req: Request, res: Response) => {
     }
 };
 
+
+
+
 export { generateChart, pieChart, doughChart };

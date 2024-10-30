@@ -1,45 +1,26 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IEstimation {
-  id: string;
-  value: number;
-  description: string;
-  createdAt: Date;
-}
-
 export interface IConstructor extends Document {
+  consid: number;
   name: string;
   email: string;
   password: string;
-  estimations: IEstimation[]; // Use an array of IEstimation
-  createdAt: Date;
+  estimations: Array<{
+    value: number;
+    description: string;
+  }>;
 }
 
-const estimationSchema: Schema<IEstimation> = new Schema(
-  {
-    id: { type: String, required: true },
+const ConstSchema = new Schema({
+  consid: { type: Number, required: false, unique: true },
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  estimations: [{
     value: { type: Number, required: true },
-    description: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now },
-  },
-  { _id: false }
-);
+    description: { type: String, required: true }
+  }]
 
-const ConstSchema: Schema<IConstructor> = new Schema(
-  {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    estimations: {
-      type: [estimationSchema],
-      required: false,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
+});
 
-const Constructor = mongoose.model<IConstructor>('Constructor', ConstSchema);
-
-export default Constructor;
+export default mongoose.model<IConstructor>('Constructor', ConstSchema);

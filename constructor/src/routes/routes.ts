@@ -1,18 +1,15 @@
 import { Router } from 'express';
 import * as constructorController from '../controllers/controller';
-import { authMiddleware } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-// Public routes
+// All routes are now public
 router.post('/register', constructorController.createConstructor);
 router.post('/login', constructorController.loginConstructor);
-
-// Protected routes
-router.get('/listings', authMiddleware as any   , constructorController.getListings);
-router.get('/dashboard', authMiddleware as any, constructorController.getDashboard);
-router.get('/all-reports', authMiddleware as any, constructorController.getReports);
-router.get('/view-project/:id', authMiddleware as any, constructorController.getViewProject);
-router.get('/:id', authMiddleware as any, constructorController.getConstructor);
+router.get('/listings', constructorController.getListings);
+router.get('/dashboard', constructorController.getDashboard);
+router.get('/all-reports', constructorController.getReports);
+router.get('/view-project/:id', constructorController.getViewProject);
+router.get('/:id', constructorController.getConstructor);
 
 export default router;

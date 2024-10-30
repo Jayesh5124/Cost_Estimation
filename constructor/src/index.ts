@@ -13,7 +13,7 @@ declare global {
 }
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3002;
 
 // Add JSON parsing middleware
 app.use(express.json({
