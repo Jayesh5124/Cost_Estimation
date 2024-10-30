@@ -4,6 +4,7 @@ import { UserService } from '../services/userService'; // Import the user servic
 import { IUser } from '../models/User';
 
 
+
 const userService = new UserService(); // Instantiate the user service
 
 export const createUser = async (req: Request, res: Response) => {
@@ -64,4 +65,55 @@ export const getUserById = async (req: Request, res: Response) => {
           res.status(500).json({ error: 'An unknown error occurred' });
         }
       }
+    }
+      
+// export const loginUser = async (req: Request, res: Response) => {
+//   const { email, password } = req.body;
+
+//   try {
+//     // Fetch user by email
+//     const user = await userService.login_user(email);
+//     if (!user) {
+//       return res.status(401).json({ message: 'Invalid email or password' });
+//     }
+
+//     // Compare the provided password with the stored password
+//     // (assuming you haven’t hashed passwords, but it's recommended to do so)
+//     if (user.password !== password) {
+//       return res.status(401).json({ message: 'Invalid email or password' });
+//     }
+
+//     // Login successful, respond with user information (optionally add JWT token)
+//     res.json({
+//       message: 'Login successful',
+//     // Add role information if needed
+//     });
+//   } catch (error) {
+//     console.error('Login error:', error);
+//     res.status(500).json({ message: 'Error logging in', error });
+//   }
+// }
+export const loginUser = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  try {
+    // Fetch user by email
+    const user = await userService.login_user(email);
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Compare provided password with stored password
+    if (user.password !== password) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Login successful
+    return res.json({
+      message: 'Login successful',
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    return res.status(500).json({ message: 'Error logging in', error });
+  }
 };
