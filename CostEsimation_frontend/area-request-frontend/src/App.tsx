@@ -56,72 +56,72 @@ import PropertyBid from './components/user_components/BidProperty';
 // Updated component import
 
 // Sample property data for demonstration
-const sampleProperties = [
-  {
-    id: 1,
-    name: 'Modern Villa',
-    state: 'Maharashtra',
-    city: 'Pune',
-    builtUpArea: '3000 sq ft',
-    ownerName: 'Abhishek Patil',
+// const sampleProperties = [
+//   {
+//     id: 1,
+//     name: 'Modern Villa',
+//     state: 'Maharashtra',
+//     city: 'Pune',
+//     builtUpArea: '3000 sq ft',
+//     ownerName: 'Abhishek Patil',
     
-  },
-  {
-    id: 1,
-    name: 'AKRA 141B',
-    state: 'Kerala',
-    city: 'Trivandrum',
-    builtUpArea: '2500 sq ft',
-    ownerName: 'John Doe',
+//   },
+//   {
+//     id: 1,
+//     name: 'AKRA 141B',
+//     state: 'Kerala',
+//     city: 'Trivandrum',
+//     builtUpArea: '2500 sq ft',
+//     ownerName: 'John Doe',
     
-  },
-  {
-    id: 1,
-    name: 'AKRA 141B',
-    state: 'Kerala',
-    city: 'Trivandrum',
-    builtUpArea: '2500 sq ft',
-    ownerName: 'John Doe',
+//   },
+//   {
+//     id: 1,
+//     name: 'AKRA 141B',
+//     state: 'Kerala',
+//     city: 'Trivandrum',
+//     builtUpArea: '2500 sq ft',
+//     ownerName: 'John Doe',
     
-  },
-  {
-    id: 1,
-    name: 'AKRA 141B',
-    state: 'Kerala',
-    city: 'Trivandrum',
-    builtUpArea: '2500 sq ft',
-    ownerName: 'John Doe',
+//   },
+//   {
+//     id: 1,
+//     name: 'AKRA 141B',
+//     state: 'Kerala',
+//     city: 'Trivandrum',
+//     builtUpArea: '2500 sq ft',
+//     ownerName: 'John Doe',
     
-  },
-  {
-    id: 1,
-    name: 'AKRA 141B',
-    state: 'Kerala',
-    city: 'Trivandrum',
-    builtUpArea: '2500 sq ft',
-    ownerName: 'John Doe',
+//   },
+//   {
+//     id: 1,
+//     name: 'AKRA 141B',
+//     state: 'Kerala',
+//     city: 'Trivandrum',
+//     builtUpArea: '2500 sq ft',
+//     ownerName: 'John Doe',
     
-  },
-  {
-    id: 1,
-    name: 'AKRA 141B',
-    state: 'Kerala',
-    city: 'Trivandrum',
-    builtUpArea: '2500 sq ft',
-    ownerName: 'John Doe',
+//   },
+//   {
+//     id: 1,
+//     name: 'AKRA 141B',
+//     state: 'Kerala',
+//     city: 'Trivandrum',
+//     builtUpArea: '2500 sq ft',
+//     ownerName: 'John Doe',
     
-  },
-  {
-    id: 1,
-    name: 'AKRA 141B',
-    state: 'Kerala',
-    city: 'Trivandrum',
-    builtUpArea: '2500 sq ft',
-    ownerName: 'John Doe',
+//   },
+//   {
+//     id: 1,
+//     name: 'AKRA 141B',
+//     state: 'Kerala',
+//     city: 'Trivandrum',
+//     builtUpArea: '2500 sq ft',
+//     ownerName: 'John Doe',
     
-  },
-  // Add more property objects as needed
-];
+//   },
+//   // Add more property objects as needed
+// ];
 
 const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -151,7 +151,7 @@ const App: React.FC = () => {
           path="/list_property"
           element={
             <PropertyListing
-              properties={sampleProperties}
+              // properties={sampleProperties}
               onViewDetails={handleViewDetails}
               onEstimate={handleEstimate}
             />

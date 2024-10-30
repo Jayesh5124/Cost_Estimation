@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Box,
@@ -29,6 +28,7 @@ const PropertyDetailsForm: React.FC = () => {
   const [builtUpArea, setBuiltUpArea] = useState('');
   const [isConstruction, setIsConstruction] = useState(false);
   const [isInteriorDesign, setIsInteriorDesign] = useState(false);
+  const [propertyName, setPropertyName] = useState('');
  
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -39,7 +39,7 @@ const PropertyDetailsForm: React.FC = () => {
       city:city,
       state: stateName,
       builtup_area: Number(builtUpArea),
-      property_name: 'Some Property Name', // Placeholder; consider adding a field for this
+      property_name: propertyName,
     };
 
     console.log(areaRequest);
@@ -83,6 +83,19 @@ const PropertyDetailsForm: React.FC = () => {
 
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
+            {/* Property Name Input */}
+            <Grid item xs={12}>
+              <TextField
+                label="Property Name"
+                variant="outlined"
+                fullWidth
+                value={propertyName}
+                onChange={(e) => setPropertyName(e.target.value)}
+                required
+                sx={{ marginBottom: 2 }}
+              />
+            </Grid>
+
             {/* City Input */}
             <Grid item xs={12} md={6}>
               <TextField
@@ -121,36 +134,6 @@ const PropertyDetailsForm: React.FC = () => {
                 sx={{ marginBottom: 2 }}
               />
             </Grid>
-
-            {/* Checkboxes for Construction and Interior Design */}
-            {/* <Grid item xs={12}>
-              <Typography variant="subtitle1" fontWeight="bold" sx={{ marginBottom: 1 }} color="#555">
-                Select Services:
-              </Typography>
-              <FormControl component="fieldset">
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={isConstruction}
-                      onChange={(e) => setIsConstruction(e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="Construction"
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={isInteriorDesign}
-                      onChange={(e) => setIsInteriorDesign(e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="Interior Design"
-                />
-              </FormControl>
-            </Grid> */}
-
             {/* Post Property Button */}
             <Grid item xs={12}>
               <Button

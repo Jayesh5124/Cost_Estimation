@@ -1,4 +1,3 @@
-
 import { Box, Typography, TextField, Button, Radio, RadioGroup, FormControlLabel, Link } from '@mui/material';
 import axios from 'axios';
 import { useState } from 'react';
@@ -23,31 +22,24 @@ const LoginForm: React.FC = () => {
   const handleLogin = async () => {
     try {
       const endpoint = userType === 'user'
-        ? 'http://localhost:3001/api/users'
+        ? 'http://localhost:3001/api/users/login'
         : 'http://localhost:3002/api/constructors/login';
 
       const response = await axios.post(endpoint, {
         email,
         password
       });
-
-     
-      const users = response.data;
-
-      const user = users.find(
-        (u: User) => u.email === email && u.password === password
-      );
-
       console.log(response.data);
-
-      if (response.data) {
+      
+      // Assuming the backend returns the user object directly if credentials are valid
+      if (response.data.user_email && response.data.user_name) {
         alert(`Login successful! Welcome ${userType}`);
-        // Here you might want to:
-        // - Store the token in localStorage
-        // - Redirect to appropriate dashboard
-        // - Update global auth state
-        navigate('/property_details', { state: { user_email: user.email, user_name: user.name }  });
-         // Pass userId in state
+        navigate('/property_details', { 
+          state: { 
+            user_email: response.data.user_email, 
+            user_name: response.data.user_name 
+          }
+        });
       } else {
         setError('Invalid email or password');
       }

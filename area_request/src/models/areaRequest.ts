@@ -16,7 +16,7 @@ const AreaRequestSchema = new Schema<IAreaRequest>({
     city: { type: String, required: true },
     state: { type: String, required: true },
     builtup_area: { type: Number, required: true },
-    property_name: { type: String, required: false },
+    property_name: { type: String, required: true },
 }, { timestamps: true });
 
 export default model<IAreaRequest>('AreaRequest', AreaRequestSchema);

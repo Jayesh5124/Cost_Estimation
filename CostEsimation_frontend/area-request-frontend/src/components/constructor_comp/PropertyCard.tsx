@@ -1,300 +1,7 @@
-
-// import React, { useState } from 'react';
-// import { Box, Typography, Button, Card, CardContent, Icon, TextField } from '@mui/material';
-// import HomeWorkIcon from '@mui/icons-material/HomeWork';
-
-// interface Property {
-//   id: number;
-//   name: string;
-//   state: string;
-//   city: string;
-//   builtUpArea: string;
-//   ownerName: string;
-// }
-
-// interface PropertyListingProps {
-//   properties: Property[];
-//   onViewDetails: (id: number) => void;
-//   onEstimate: (id: number) => void;
-// }
-
-// const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onViewDetails, onEstimate }) => {
-//   const [searchTerm, setSearchTerm] = useState('');
-
-//   // Filter properties based on name or built-up area
-//   const filteredProperties = properties.filter((property) => {
-//     const builtUpAreaMatch = property.builtUpArea.includes(searchTerm);
-//     const nameMatch = property.name.toLowerCase().includes(searchTerm.toLowerCase());
-//     return nameMatch || builtUpAreaMatch;
-//   });
-
-//   return (
-//     <Box sx={{ padding: 2, background: 'linear-gradient(to right, #f8f9fa, #e0f7fa)', minHeight: '100vh' }}>
-//       {/* Search Box */}
-//       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-//         <TextField
-//           label="Search by Name or Built-Up Area"
-//           variant="outlined"
-//           value={searchTerm}
-//           onChange={(e) => setSearchTerm(e.target.value)}
-//           sx={{
-//             width: '300px',
-//             '& .MuiOutlinedInput-root': {
-//               borderRadius: '20px',
-//               boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-//               backgroundColor: '#fff',
-//               '& fieldset': { borderColor: '#1976d2' },
-//               '&:hover fieldset': { borderColor: '#0d47a1' },
-//               '&.Mui-focused fieldset': { borderColor: '#0d47a1' },
-//             },
-//             '& .MuiInputLabel-outlined': {
-//               color: '#1976d2',
-//             },
-//           }}
-//         />
-//       </Box>
-
-//       {/* Property Cards */}
-//       {filteredProperties.map((property) => (
-//         <Card
-//           key={property.id}
-//           sx={{
-//             display: 'flex',
-//             mb: 3,
-//             p: 3,
-//             alignItems: 'center',
-//             borderRadius: 3,
-//             background: 'linear-gradient(to right,#919191, #f1f1f1)',
-//             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-//             transition: 'transform 0.2s ease-in-out',
-//             '&:hover': { transform: 'scale(1.03)', boxShadow: '0 12px 28px rgba(0, 0, 0, 0.2)' },
-//           }}
-//         >
-//           {/* Icon and Property Info */}
-//           <Box sx={{ display: 'flex', width: '30%', alignItems: 'center' }}>
-//             <Icon sx={{ fontSize: 60, color: 'black', marginRight: 2 }}>
-//               <HomeWorkIcon fontSize="inherit" />
-//             </Icon>
-//             <Box>
-//               <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#181a1a' }}>{property.name}</Typography>
-//               <Typography variant="body2" sx={{ color: '#45591c' }}>{property.state}</Typography>
-//               <Typography variant="body2" sx={{ color: '#45591c' }}>{property.city}</Typography>
-//               <Typography variant="body2" sx={{ color: '#4e342e', mt: 1 }}>Built-up Area: {property.builtUpArea}</Typography>
-//               <Typography variant="body2" sx={{ color: '#4e342e' }}>Owner: {property.ownerName}</Typography>
-//             </Box>
-//           </Box>
-
-//           {/* Property Details and Buttons */}
-//           <CardContent sx={{ flexGrow: 1, ml: 3, borderLeft: '1px solid #b0bec5', pl: 3 }}>
-//             <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#181a1a' }}>Property Details</Typography>
-//             <Typography variant="body2" sx={{ color: '#37474f', mb: 1 }}>
-//               Explore detailed information about the property.
-//             </Typography>
-//             <Button
-//               variant="outlined"
-//               onClick={() => onViewDetails(property.id)}
-//               sx={{
-//                 color: '#0288d1',
-//                 borderColor: '#0288d1',
-//                 '&:hover': {
-//                   backgroundColor: '#0288d1',
-//                   color: '#fff',
-//                   boxShadow: '0 4px 10px rgba(2, 136, 209, 0.3)',
-//                 },
-//               }}
-//             >
-//               View Details
-//             </Button>
-//           </CardContent>
-
-//           {/* Estimate Button */}
-//           <Box sx={{ textAlign: 'right', minWidth: '150px' }}>
-//             <Button
-//               variant="contained"
-//               onClick={() => onEstimate(property.id)}
-//               sx={{
-//                 px: 3,
-//                 py: 1.5,
-//                 fontWeight: 'bold',
-//                 borderRadius: '8px',
-//                 backgroundColor: 'black',
-//                 boxShadow: '0px 6px 16px rgba(255, 112, 67, 0.4)',
-//                 '&:hover': {
-//                   backgroundColor: 'gray',
-//                   boxShadow: '0px 8px 20px rgba(230, 74, 25, 0.6)',
-//                 },
-//               }}
-//             >
-//               Estimate
-//             </Button>
-//           </Box>
-//         </Card>
-//       ))}
-//     </Box>
-//   );
-// };
-
-// // export default PropertyListing;
-// import React, { useState } from 'react';
-// import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination } from '@mui/material';
-// import HomeWorkIcon from '@mui/icons-material/HomeWork';
-
-// interface Property {
-//   id: number;
-//   name: string;
-//   state: string;
-//   city: string;
-//   builtUpArea: string;
-//   ownerName: string;
-// }
-
-// interface PropertyListingProps {
-//   properties: Property[];
-//   onViewDetails: (id: number) => void;
-//   onEstimate: (id: number) => void;
-// }
-
-// const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onViewDetails, onEstimate }) => {
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const propertiesPerPage = 5;
-
-//   const handleSearch = () => {
-//     setCurrentPage(1); // Reset to the first page after a new search
-//   };
-
-//   // Filter properties based on name or built-up area
-//   const filteredProperties = properties.filter((property) => {
-//     const builtUpAreaMatch = property.builtUpArea.includes(searchTerm);
-//     const nameMatch = property.name.toLowerCase().includes(searchTerm.toLowerCase());
-//     return nameMatch || builtUpAreaMatch;
-//   });
-
-//   // Calculate properties for the current page
-//   const startIndex = (currentPage - 1) * propertiesPerPage;
-//   const endIndex = startIndex + propertiesPerPage;
-//   const paginatedProperties = filteredProperties.slice(startIndex, endIndex);
-//   const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
-
-//   return (
-//     <Box sx={{ padding: 2, background: 'linear-gradient(to right, #f8f9fa, #e0f7fa)', minHeight: '100vh' }}>
-//       {/* Search Box */}
-//       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
-//         <TextField
-//           label="Search by Name or Built-Up Area"
-//           variant="outlined"
-//           value={searchTerm}
-//           onChange={(e) => setSearchTerm(e.target.value)}
-//           sx={{
-//             width: '300px',
-//             mr: 2,
-//             '& .MuiOutlinedInput-root': {
-//               borderRadius: '20px',
-//               boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-//               backgroundColor: '#fff',
-//               '& fieldset': { borderColor: '#1976d2' },
-//               '&:hover fieldset': { borderColor: '#0d47a1' },
-//               '&.Mui-focused fieldset': { borderColor: '#0d47a1' },
-//             },
-//             '& .MuiInputLabel-outlined': {
-//               color: '#1976d2',
-//             },
-//           }}
-//         />
-//         {/* Pagination */}
-//       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3,ml:10 }}>
-//         <Pagination
-//           count={totalPages}
-//           page={currentPage}
-//           onChange={(e, page) => setCurrentPage(page)}
-//           color="primary"
-//         />
-//       </Box>
-//       </Box>
-
-//       {/* Property Cards */}
-//       {paginatedProperties.map((property) => (
-//         <Card
-//           key={property.id}
-//           sx={{
-//             display: 'flex',
-//             mb: 3,
-//             p: 3,
-//             alignItems: 'center',
-//             borderRadius: 3,
-//             background: 'linear-gradient(to right,#919191, #f1f1f1)',
-//             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-//             transition: 'transform 0.2s ease-in-out',
-//             '&:hover': { transform: 'scale(1.03)', boxShadow: '0 12px 28px rgba(0, 0, 0, 0.2)' },
-//           }}
-//         >
-//           <Box sx={{ display: 'flex', width: '30%', alignItems: 'center' }}>
-//             <Icon sx={{ fontSize: 60, color: 'black', marginRight: 2 }}>
-//               <HomeWorkIcon fontSize="inherit" />
-//             </Icon>
-//             <Box>
-//               <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#181a1a' }}>{property.name}</Typography>
-//               <Typography variant="body2" sx={{ color: '#45591c' }}>{property.state}</Typography>
-//               <Typography variant="body2" sx={{ color: '#45591c' }}>{property.city}</Typography>
-//               <Typography variant="body2" sx={{ color: '#4e342e', mt: 1 }}>Built-up Area: {property.builtUpArea}</Typography>
-//               <Typography variant="body2" sx={{ color: '#4e342e' }}>Owner: {property.ownerName}</Typography>
-//             </Box>
-//           </Box>
-
-//           <CardContent sx={{ flexGrow: 1, ml: 3, borderLeft: '1px solid #b0bec5', pl: 3 }}>
-//             <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#181a1a' }}>Property Details</Typography>
-//             <Typography variant="body2" sx={{ color: '#37474f', mb: 1 }}>
-//               Explore detailed information about the property.
-//             </Typography>
-//             <Button
-//               variant="outlined"
-//               onClick={() => onViewDetails(property.id)}
-//               sx={{
-//                 color: '#0288d1',
-//                 borderColor: '#0288d1',
-//                 '&:hover': {
-//                   backgroundColor: '#0288d1',
-//                   color: '#fff',
-//                   boxShadow: '0 4px 10px rgba(2, 136, 209, 0.3)',
-//                 },
-//               }}
-//             >
-//               View Details
-//             </Button>
-//           </CardContent>
-
-//           <Box sx={{ textAlign: 'right', minWidth: '150px' }}>
-//             <Button
-//               variant="contained"
-//               onClick={() => onEstimate(property.id)}
-//               sx={{
-//                 px: 3,
-//                 py: 1.5,
-//                 fontWeight: 'bold',
-//                 borderRadius: '8px',
-//                 backgroundColor: 'black',
-//                 boxShadow: '0px 6px 16px rgba(255, 112, 67, 0.4)',
-//                 '&:hover': {
-//                   backgroundColor: 'gray',
-//                   boxShadow: '0px 8px 20px rgba(230, 74, 25, 0.6)',
-//                 },
-//               }}
-//             >
-//               Estimate
-//             </Button>
-//           </Box>
-//         </Card>
-//       ))}
-
-      
-//     </Box>
-//   );
-// };
-
-// export default PropertyListing;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination } from '@mui/material';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import axios from 'axios';
 
 interface Property {
   id: number;
@@ -306,15 +13,67 @@ interface Property {
 }
 
 interface PropertyListingProps {
-  properties: Property[];
   onViewDetails: (id: number) => void;
   onEstimate: (id: number) => void;
 }
 
-const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onViewDetails, onEstimate }) => {
+const PropertyListing: React.FC<PropertyListingProps> = ({ onViewDetails, onEstimate }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const propertiesPerPage = 5;
+  const [properties, setProperties] = useState<Property[]>([]);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const response = await axios.get('http://localhost:3003/api/area-requests');
+        console.log('Raw response:', response);
+        
+        let formattedData;
+        if (Array.isArray(response.data)) {
+          formattedData = response.data;
+        } else if (typeof response.data === 'object') {
+          formattedData = response.data.data || response.data.properties || [response.data];
+        } else {
+          formattedData = [];
+        }
+        
+        console.log('Formatted data before validation:', formattedData);
+        
+        const validProperties = formattedData.filter((property: any) => {
+          // Log the raw property for debugging
+          console.log('Raw property:', JSON.stringify(property, null, 2));
+          
+          // Check each field individually and log the result
+          const checks = {
+            hasId: property?.id != null,
+            hasName: typeof property?.name === 'string' && property.name.trim() !== '',
+            hasState: typeof property?.state === 'string' && property.state.trim() !== '',
+            hasCity: typeof property?.city === 'string' && property.city.trim() !== '',
+            hasBuiltUpArea: typeof property?.builtUpArea === 'string' && property.builtUpArea.trim() !== '',
+            hasOwnerName: typeof property?.ownerName === 'string' && property.ownerName.trim() !== ''
+          };
+          
+          console.log('Validation checks:', checks);
+
+          const isValid = Object.values(checks).every(check => check === true);
+          console.log('Final validation result:', isValid);
+          
+          return isValid;
+        });
+        
+        console.log('Valid properties:', validProperties);
+        setProperties(validProperties);
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+        setProperties([]);
+      }
+    };
+
+    fetchProperties();
+  }, []);
+
+  console.log('Current properties:', properties);
 
   // Handle search and reset current page
   const handleSearch = () => {
@@ -323,8 +82,10 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onViewDet
 
   // Filter properties based on name or built-up area
   const filteredProperties = properties.filter((property) => {
-    const builtUpAreaMatch = property.builtUpArea.includes(searchTerm);
-    const nameMatch = property.name.toLowerCase().includes(searchTerm.toLowerCase());
+    console.log(property);
+    
+    const builtUpAreaMatch = property.builtUpArea?.includes(searchTerm) || false;
+    const nameMatch = property.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
     return nameMatch || builtUpAreaMatch;
   });
 
@@ -333,6 +94,10 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onViewDet
   const endIndex = startIndex + propertiesPerPage;
   const paginatedProperties = filteredProperties.slice(startIndex, endIndex);
   const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
+
+  // Debug logs
+  console.log('Filtered properties:', filteredProperties);
+  console.log('Paginated properties:', paginatedProperties);
 
   // Update current page if it exceeds the total pages after filtering
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
@@ -387,7 +152,7 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onViewDet
       {/* Property Cards */}
       {paginatedProperties.map((property) => (
         <Card
-          key={property.id}
+          key={property._id}
           sx={{
             display: 'flex',
             mb: 3,
@@ -405,11 +170,11 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onViewDet
               <HomeWorkIcon fontSize="inherit" />
             </Icon>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#181a1a' }}>{property.name}</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#181a1a' }}>{property.user_name}</Typography>
               <Typography variant="body2" sx={{ color: '#45591c' }}>{property.state}</Typography>
               <Typography variant="body2" sx={{ color: '#45591c' }}>{property.city}</Typography>
-              <Typography variant="body2" sx={{ color: '#4e342e', mt: 1 }}>Built-up Area: {property.builtUpArea}</Typography>
-              <Typography variant="body2" sx={{ color: '#4e342e' }}>Owner: {property.ownerName}</Typography>
+              <Typography variant="body2" sx={{ color: '#4e342e', mt: 1 }}>Built-up Area: {property.builtup_area}</Typography>
+              <Typography variant="body2" sx={{ color: '#4e342e' }}>Owner: {property.property_name}</Typography>
             </Box>
           </Box>
 
@@ -420,7 +185,7 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onViewDet
             </Typography>
             <Button
               variant="outlined"
-              onClick={() => onViewDetails(property.id)}
+              onClick={() => onViewDetails(property._id)}
               sx={{
                 color: '#0288d1',
                 borderColor: '#0288d1',
