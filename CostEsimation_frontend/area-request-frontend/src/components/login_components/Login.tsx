@@ -1,13 +1,16 @@
-// import React, { useState } from 'react';
+
 import { Box, Typography, TextField, Button, Radio, RadioGroup, FormControlLabel, Link } from '@mui/material';
 import axios from 'axios';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-// Define the User interface
 interface User {
+  
   email: string;
+  name:string;
   password: string;
   userType: string;
+  userId: number; // Assuming there's a userId field
 }
 
 const LoginForm: React.FC = () => {
@@ -15,9 +18,11 @@ const LoginForm: React.FC = () => {
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('user'); // Default user type
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
+<<<<<<< HEAD
       const endpoint = userType === 'user'
         ? 'http://localhost:3001/api/users/login'
         : 'http://localhost:3002/api/constructors/login';
@@ -26,15 +31,30 @@ const LoginForm: React.FC = () => {
         email,
         password
       });
+=======
+      const response = await axios.get<User[]>('http://localhost:3001/api/users');
+      const users = response.data;
+
+      const user = users.find(
+        (u: User) => u.email === email && u.password === password
+      );
+>>>>>>> ac4c85af00c323801bca7ca1f6e657cbcea8ab60
 
       console.log(response.data);
 
       if (response.data) {
         alert(`Login successful! Welcome ${userType}`);
+<<<<<<< HEAD
         // Here you might want to:
         // - Store the token in localStorage
         // - Redirect to appropriate dashboard
         // - Update global auth state
+=======
+        navigate('/property_details', { state: { user_email: user.email, user_name: user.name }  });
+         // Pass userId in state
+      } else {
+        setError('Invalid email or password');
+>>>>>>> ac4c85af00c323801bca7ca1f6e657cbcea8ab60
       }
     } catch (error) {
       console.error('Error logging in:', error);
@@ -43,26 +63,8 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '73vh',
-        backgroundColor: '#f0f0f0',
-        padding: '2rem',
-      }}
-    >
-      <Box
-        sx={{
-          backgroundColor: '#ffffff',
-          borderRadius: '12px',
-          boxShadow: '0 6px 12px rgba(0, 0, 0, 0.1)',
-          padding: '2.5rem',
-          width: '100%',
-          maxWidth: '400px',
-        }}
-      >
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '73vh', backgroundColor: '#f0f0f0', padding: '2rem' }}>
+      <Box sx={{ backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: '0 6px 12px rgba(0, 0, 0, 0.1)', padding: '2.5rem', width: '100%', maxWidth: '400px' }}>
         <Typography variant="h4" gutterBottom textAlign="center" fontWeight="bold">
           Login
         </Typography>
@@ -101,13 +103,7 @@ const LoginForm: React.FC = () => {
           color="primary"
           fullWidth
           onClick={handleLogin}
-          sx={{
-            marginBottom: '1rem',
-            backgroundColor: '#1976d2',
-            '&:hover': {
-              backgroundColor: '#155a8a',
-            },
-          }}
+          sx={{ marginBottom: '1rem', backgroundColor: '#1976d2', '&:hover': { backgroundColor: '#155a8a' } }}
         >
           Login
         </Button>

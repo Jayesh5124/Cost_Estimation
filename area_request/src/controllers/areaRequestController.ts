@@ -9,8 +9,8 @@ const areaRequestService = new AreaRequestService();
 // Create a new area request
 export const createAreaRequest = async (req: Request, res: Response) => {
     try {
-        const { user_id, city, state, builtup_area, property_name } = req.body;
-        const areaRequest = await areaRequestService.createAreaRequest({ user_id, city, state, builtup_area, property_name } as IAreaRequest);
+        const { user_email,user_name, city, state, builtup_area, property_name } = req.body;
+        const areaRequest = await areaRequestService.createAreaRequest({ user_email,user_name, city, state, builtup_area, property_name } as IAreaRequest);
         res.status(201).json(areaRequest);
     } catch (error) {
         console.error(error);

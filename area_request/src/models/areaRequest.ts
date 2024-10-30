@@ -1,21 +1,22 @@
-// models/areaRequest.ts
 
-import { Schema, model } from 'mongoose';
-
+import { Schema, model, Document } from 'mongoose';
 
 export interface IAreaRequest extends Document {
-    user_id: number;
+    user_email: string;
+    user_name:string;
     city: string;
     state: string;
     builtup_area: number; 
     property_name: string; 
 }
-const AreaRequestSchema: Schema = new Schema({
-    user_id: { type: Number, required: true },
+
+const AreaRequestSchema = new Schema<IAreaRequest>({
+    user_email: { type: String, required: true },
+    user_name: { type: String, required: true },
     city: { type: String, required: true },
     state: { type: String, required: true },
     builtup_area: { type: Number, required: true },
-    property_name: { type: String, required: true },
-}, { timestamps: true }); // This will automatically create createdAt and updatedAt fields
+    property_name: { type: String, required: false },
+}, { timestamps: true });
 
 export default model<IAreaRequest>('AreaRequest', AreaRequestSchema);

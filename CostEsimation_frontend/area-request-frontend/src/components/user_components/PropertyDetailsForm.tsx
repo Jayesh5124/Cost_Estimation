@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Box,
@@ -9,32 +10,58 @@ import {
   FormControlLabel,
   Checkbox,
 } from '@mui/material';
+import { useLocation } from 'react-router-dom';
+import axios from 'axios';
+
+// Define a type for the location state to get userId
+interface LocationState {
+  userId: number;
+}
 
 const PropertyDetailsForm: React.FC = () => {
+  // Use useLocation without generics
+  const location = useLocation(); // Just use useLocation
+  const userEmail = (location.state as { user_email: string })?.user_email; 
+  const userName = (location.state as { user_name: string })?.user_name; // Cast location.state to LocationState
+ 
   const [city, setCity] = useState('');
-  const [state, setState] = useState('');
+  const [stateName, setStateName] = useState('');
   const [builtUpArea, setBuiltUpArea] = useState('');
   const [isConstruction, setIsConstruction] = useState(false);
   const [isInteriorDesign, setIsInteriorDesign] = useState(false);
+ 
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    // Handle form submission logic
-    console.log({
-      city,
-      state,
-      builtUpArea,
-      isConstruction,
-      isInteriorDesign,
-    });
+    const areaRequest = {
+      user_email: userEmail,/// Use userId from state
+      user_name: userName,
+      city:city,
+      state: stateName,
+      builtup_area: Number(builtUpArea),
+      property_name: 'Some Property Name', // Placeholder; consider adding a field for this
+    };
+
+    console.log(areaRequest);
+    console.log('User email:',userEmail);
+    console.log('User Name:',userName);
+    
+    // Make an API call to save the areaRequest
+    try {
+      await axios.post('http://localhost:3003/api/area-requests', areaRequest);
+      alert('Property details submitted successfully!');
+    } catch (error) {
+      console.error('Error submitting property details:', error);
+      alert('Failed to submit property details. Please try again.');
+    }
   };
 
   return (
     <Box
       sx={{
         padding: 4,
-        backgroundColor: '#f7f9fc', // Light background color for the entire page
-        minHeight: '73vh', // Full height for the background
+        backgroundColor: '#f7f9fc',
+        minHeight: '73vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -43,11 +70,11 @@ const PropertyDetailsForm: React.FC = () => {
       <Box
         sx={{
           padding: 4,
-          backgroundColor: '#ffffff', // White background for the form
-          borderRadius: '12px', // Rounded corners
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', // Enhanced shadow for depth
-          maxWidth: '600px', // Limit the width of the form
-          width: '100%', // Responsive width
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+          maxWidth: '600px',
+          width: '100%',
         }}
       >
         <Typography variant="h4" gutterBottom textAlign="center" fontWeight="bold" color="#333">
@@ -65,7 +92,7 @@ const PropertyDetailsForm: React.FC = () => {
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 required
-                sx={{ marginBottom: 2 }} // Spacing below the input
+                sx={{ marginBottom: 2 }}
               />
             </Grid>
 
@@ -75,10 +102,10 @@ const PropertyDetailsForm: React.FC = () => {
                 label="Enter State"
                 variant="outlined"
                 fullWidth
-                value={state}
-                onChange={(e) => setState(e.target.value)}
+                value={stateName}
+                onChange={(e) => setStateName(e.target.value)}
                 required
-                sx={{ marginBottom: 2 }} // Spacing below the input
+                sx={{ marginBottom: 2 }}
               />
             </Grid>
 
@@ -91,12 +118,12 @@ const PropertyDetailsForm: React.FC = () => {
                 value={builtUpArea}
                 onChange={(e) => setBuiltUpArea(e.target.value)}
                 required
-                sx={{ marginBottom: 2 }} // Spacing below the input
+                sx={{ marginBottom: 2 }}
               />
             </Grid>
 
             {/* Checkboxes for Construction and Interior Design */}
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <Typography variant="subtitle1" fontWeight="bold" sx={{ marginBottom: 1 }} color="#555">
                 Select Services:
               </Typography>
@@ -122,7 +149,7 @@ const PropertyDetailsForm: React.FC = () => {
                   label="Interior Design"
                 />
               </FormControl>
-            </Grid>
+            </Grid> */}
 
             {/* Post Property Button */}
             <Grid item xs={12}>
@@ -133,10 +160,10 @@ const PropertyDetailsForm: React.FC = () => {
                 fullWidth
                 sx={{
                   '&:hover': {
-                    backgroundColor: '#1976d2', // Darker shade on hover
+                    backgroundColor: '#1976d2',
                   },
-                  padding: '1rem', // Increased padding for better clickability
-                  fontWeight: 'bold', // Bold text for the button
+                  padding: '1rem',
+                  fontWeight: 'bold',
                 }}
               >
                 Post Property
