@@ -22,39 +22,34 @@ const LoginForm: React.FC = () => {
 
   const handleLogin = async () => {
     try {
-<<<<<<< HEAD
       const endpoint = userType === 'user'
-        ? 'http://localhost:3001/api/users/login'
+        ? 'http://localhost:3001/api/users'
         : 'http://localhost:3002/api/constructors/login';
 
       const response = await axios.post(endpoint, {
         email,
         password
       });
-=======
-      const response = await axios.get<User[]>('http://localhost:3001/api/users');
+
+     
       const users = response.data;
 
       const user = users.find(
         (u: User) => u.email === email && u.password === password
       );
->>>>>>> ac4c85af00c323801bca7ca1f6e657cbcea8ab60
 
       console.log(response.data);
 
       if (response.data) {
         alert(`Login successful! Welcome ${userType}`);
-<<<<<<< HEAD
         // Here you might want to:
         // - Store the token in localStorage
         // - Redirect to appropriate dashboard
         // - Update global auth state
-=======
         navigate('/property_details', { state: { user_email: user.email, user_name: user.name }  });
          // Pass userId in state
       } else {
         setError('Invalid email or password');
->>>>>>> ac4c85af00c323801bca7ca1f6e657cbcea8ab60
       }
     } catch (error) {
       console.error('Error logging in:', error);
