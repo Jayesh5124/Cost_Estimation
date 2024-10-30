@@ -20,6 +20,7 @@ router.post('/users', createUser);
 router.put('/users/:id', updateUser);
 router.get('/users', getAllUsers);
 router.get('/users/:id', getUserById);
+router.get('/users/login',loginUser as any);
 
 
 export default router;
