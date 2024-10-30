@@ -36,20 +36,17 @@
 import User, { IUser } from '../models/User';
 
 export class UserService {
-//    async login_user(email: any) {
+   async login_user(email: any) {
        
-//         try {
-//             const user = await User.findOne({ email });
-//             return user;
-//           } catch (error) {
-//             console.error('Error finding user:', error);
-//             throw new Error('Error finding user');
-//           }
-//     }
-async login_user(email:any) {
-    // Assuming User is a model with a findOne method
-    return await User.findOne({ email });
-  }
+        try {
+            const user = await User.findOne({ email });
+            return user;
+          } catch (error) {
+            console.error('Error finding user:', error);
+            throw new Error('Error finding user');
+          }
+    }
+
     // Method to get a user by ID
     async getUserById(id: string): Promise<IUser | null> {
         return await User.findById(id); // Fetch user by ID

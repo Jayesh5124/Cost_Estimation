@@ -56,7 +56,7 @@ const RegistrationPage: React.FC = () => {
         justifyContent: 'center',
         alignItems: 'center',
         height: '86vh',
-        backgroundColor: '#e9ecef',
+       background: 'linear-gradient(to right, #f8f9fa, #e0f7fa)',
         padding: '2rem',
       }}
     >

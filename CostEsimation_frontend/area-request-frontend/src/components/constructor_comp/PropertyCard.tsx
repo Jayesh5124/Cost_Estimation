@@ -150,7 +150,7 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ onViewDetails, onEsti
      
 
       {/* Property Cards */}
-      {paginatedProperties.map((property) => (
+      {/* {paginatedProperties.map((property) => (
         <Card
           key={property._id}
           sx={{
@@ -221,7 +221,7 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ onViewDetails, onEsti
             </Button>
           </Box>
         </Card>
-      ))}
+      ))} */}
     </Box>
   );
 };
