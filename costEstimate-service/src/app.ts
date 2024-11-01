@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import costRoutes from './routes/cost_estimate-routes';
+import cors from 'cors';
 
 
 // Initialize environment variables
@@ -12,7 +13,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-
+app.use(cors());
 // Routes
 app.use('/api', costRoutes);
 

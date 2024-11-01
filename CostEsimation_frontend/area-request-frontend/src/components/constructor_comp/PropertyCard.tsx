@@ -47,7 +47,7 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onViewDet
   const getCityType = (city: string): number => {
     const tier1Cities = [
       'mumbai', 'delhi', 'bangalore', 'chennai', 'kolkata', 
-      'hyderabad', 'pune', 'ahmedabad', 'bengaluru', 'new delhi','surat', 'lucknow', 'jaipur', 'nagpur', 'indore',
+      'hyderabad', 'pune', 'ahmedabad', 'bengaluru', 'bangalore','new delhi','surat', 'lucknow', 'jaipur', 'nagpur', 'indore',
       'thane', 'bhopal', 'visakhapatnam', 'pimpri-chinchwad', 'patna',
       'vadodara', 'ghaziabad', 'ludhiana', 'coimbatore', 'agra',
       'madurai', 'nashik', 'faridabad', 'meerut', 'rajkot',
@@ -68,17 +68,21 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onViewDet
       const type = getCityType(property.city);
       console.log(type);
       console.log(property.builtup_area);
+      let total_cost = 0;
       
       
-      const response = await axios.post(`localhost:3005/api/cost-estimates/calculate/${property.builtup_area}/${type}`, {
+      const response = await axios.post(`http://localhost:3005/api/cost-estimates/calculate/${property.builtup_area}/${type}`, {
         builtup_area: property.builtup_area,
         type: type
       });
       
-      navigate('/cost_estimation', { 
-        state: { 
+      console.log(response.data);
+      total_cost = response.data;
+      navigate('/cost_estimation', {
+        state: {
           email: property.user_email,
-          estimationResult: response.data 
+          estimationResult: response.data,
+          total_cost: total_cost
         } 
       });
       

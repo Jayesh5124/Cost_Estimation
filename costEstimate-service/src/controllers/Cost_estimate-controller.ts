@@ -94,7 +94,7 @@ export const calculateTotalCostEstimate = async (req: Request, res: Response) =>
             return res.status(400).json({ error: 'Type must be 1, 2' });
         }
 
-        const [cost1, cost2] = [1000, 1450];
+        const [cost1, cost2] = [1202, 1560];
         let totalCostEstimate = 0;
 
         if(type === 1){
