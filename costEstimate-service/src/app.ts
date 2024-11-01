@@ -17,7 +17,7 @@ app.use(express.json());
 app.use('/api', costRoutes);
 
 // Port configuration
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3005;
 const MONGO_URI = process.env.MONGO_URI;
 
 // Connect to MongoDB

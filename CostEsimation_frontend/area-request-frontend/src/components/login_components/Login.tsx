@@ -32,6 +32,7 @@ const LoginForm: React.FC = () => {
       console.log(response.data);
       
       // Assuming the backend returns the user object directly if credentials are valid
+      if(userType === 'user'){
       if (response.data.user_email && response.data.user_name) {
         alert(`Login successful! Welcome ${userType}`);
         navigate('/property_details', { 
@@ -41,7 +42,14 @@ const LoginForm: React.FC = () => {
           }
         });
       } else {
-        setError('Invalid email or password');
+          setError('Invalid email or password');
+        }
+      }
+      else if(userType === 'constructor'){
+        if (response.data.email && response.data.name) {
+          alert(`Login successful! Welcome ${userType}`);
+          navigate('/list_property');
+        }
       }
     } catch (error) {
       console.error('Error logging in:', error);

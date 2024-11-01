@@ -1,116 +1,96 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination } from '@mui/material';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 interface Property {
-  id: number;
-  name: string;
-  state: string;
+  user_email: string;
+  user_name: string;
   city: string;
-  builtUpArea: string;
-  ownerName: string;
+  state: string;
+  builtup_area: number;
+  property_name: string;
 }
 
 interface PropertyListingProps {
-  onViewDetails: (id: number) => void;
-  onEstimate: (id: number) => void;
+  properties: Property[];
+  onViewDetails: (id: string) => void;
+  onEstimate: (id: string) => void;
 }
 
-const PropertyListing: React.FC<PropertyListingProps> = ({ onViewDetails, onEstimate }) => {
+const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onViewDetails, onEstimate }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const propertiesPerPage = 5;
-  const [properties, setProperties] = useState<Property[]>([]);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        const response = await axios.get('http://localhost:3003/api/area-requests');
-        console.log('Raw response:', response);
-        
-        let formattedData;
-        if (Array.isArray(response.data)) {
-          formattedData = response.data;
-        } else if (typeof response.data === 'object') {
-          formattedData = response.data.data || response.data.properties || [response.data];
-        } else {
-          formattedData = [];
-        }
-        
-        console.log('Formatted data before validation:', formattedData);
-        
-        const validProperties = formattedData.filter((property: any) => {
-          // Log the raw property for debugging
-          console.log('Raw property:', JSON.stringify(property, null, 2));
-          
-          // Check each field individually and log the result
-          const checks = {
-            hasId: property?.id != null,
-            hasName: typeof property?.name === 'string' && property.name.trim() !== '',
-            hasState: typeof property?.state === 'string' && property.state.trim() !== '',
-            hasCity: typeof property?.city === 'string' && property.city.trim() !== '',
-            hasBuiltUpArea: typeof property?.builtUpArea === 'string' && property.builtUpArea.trim() !== '',
-            hasOwnerName: typeof property?.ownerName === 'string' && property.ownerName.trim() !== ''
-          };
-          
-          console.log('Validation checks:', checks);
-
-          const isValid = Object.values(checks).every(check => check === true);
-          console.log('Final validation result:', isValid);
-          
-          return isValid;
-        });
-        
-        console.log('Valid properties:', validProperties);
-        setProperties(validProperties);
-      } catch (error) {
-        console.error('Error fetching properties:', error);
-        setProperties([]);
-      }
-    };
-
-    fetchProperties();
-  }, []);
-
-  console.log('Current properties:', properties);
-
-  // Handle search and reset current page
-  const handleSearch = () => {
-    setCurrentPage(1); // Reset to the first page after a new search
-  };
-
-  // Filter properties based on name or built-up area
   const filteredProperties = properties.filter((property) => {
-    console.log(property);
-    
-    const builtUpAreaMatch = property.builtUpArea?.includes(searchTerm) || false;
-    const nameMatch = property.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+    const builtUpAreaMatch = property.builtup_area.toString().includes(searchTerm);
+    const nameMatch = property.property_name.toLowerCase().includes(searchTerm.toLowerCase());
     return nameMatch || builtUpAreaMatch;
   });
 
-  // Calculate properties for the current page
   const startIndex = (currentPage - 1) * propertiesPerPage;
   const endIndex = startIndex + propertiesPerPage;
   const paginatedProperties = filteredProperties.slice(startIndex, endIndex);
   const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
 
-  // Debug logs
-  console.log('Filtered properties:', filteredProperties);
-  console.log('Paginated properties:', paginatedProperties);
-
-  // Update current page if it exceeds the total pages after filtering
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     if (page > totalPages) {
-      setCurrentPage(totalPages); // Ensure current page does not exceed total pages
+      setCurrentPage(totalPages);
     } else {
       setCurrentPage(page);
     }
   };
 
+  const getCityType = (city: string): number => {
+    const tier1Cities = [
+      'mumbai', 'delhi', 'bangalore', 'chennai', 'kolkata', 
+      'hyderabad', 'pune', 'ahmedabad', 'bengaluru', 'new delhi','surat', 'lucknow', 'jaipur', 'nagpur', 'indore',
+      'thane', 'bhopal', 'visakhapatnam', 'pimpri-chinchwad', 'patna',
+      'vadodara', 'ghaziabad', 'ludhiana', 'coimbatore', 'agra',
+      'madurai', 'nashik', 'faridabad', 'meerut', 'rajkot',
+      'kalyan-dombivli', 'vasai-virar', 'varanasi', 'srinagar', 'aurangabad',
+      'dhanbad', 'amritsar', 'navi mumbai', 'allahabad', 'ranchi',
+      'howrah', 'jabalpur', 'gwalior', 'vijayawada', 'jodhpur',
+      'raipur', 'kota', 'chandigarh', 'guwahati', 'solapur',
+      'hubli-dharwad', 'mysore', 'tiruchirappalli', 'bareilly', 'aligarh',
+      'tiruppur', 'gurgaon', 'moradabad', 'jalandhar', 'bhubaneswar'
+    ];
+    const cityLower = city.toLowerCase();
+    if (tier1Cities.includes(cityLower)) return 2;
+    return 1; // For all other cities (Tier 3)
+  };
+
+  const handleEstimate = async (property: Property) => {
+    try {
+      const type = getCityType(property.city);
+      console.log(type);
+      console.log(property.builtup_area);
+      
+      
+      const response = await axios.post(`localhost:3005/api/cost-estimates/calculate/${property.builtup_area}/${type}`, {
+        builtup_area: property.builtup_area,
+        type: type
+      });
+      
+      navigate('/cost_estimation', { 
+        state: { 
+          email: property.user_email,
+          estimationResult: response.data 
+        } 
+      });
+      
+      onEstimate(property.user_email);
+    } catch (error) {
+      console.error('Error calculating estimation:', error);
+      // Handle error appropriately
+    }
+  };
+
   return (
     <Box sx={{ padding: 2, background: 'linear-gradient(to right, #f8f9fa, #e0f7fa)', minHeight: '100vh' }}>
-      {/* Search Box */}
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
         <TextField
           label="Search by Name or Built-Up Area"
@@ -118,7 +98,6 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ onViewDetails, onEsti
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
-            handleSearch(); // Call handleSearch on input change
           }}
           sx={{
             width: '300px',
@@ -136,23 +115,19 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ onViewDetails, onEsti
             },
           }}
         />
-         {/* Pagination */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3, ml: 10 }}>
-        <Pagination
-          count={totalPages}
-          page={currentPage}
-          onChange={handlePageChange} // Update to use the handlePageChange function
-          color="primary"
-        />
-      </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3, ml: 10 }}>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={handlePageChange}
+            color="primary"
+          />
+        </Box>
       </Box>
 
-     
-
-      {/* Property Cards */}
-      {/* {paginatedProperties.map((property) => (
+      {paginatedProperties.map((property) => (
         <Card
-          key={property._id}
+          key={property.user_email}
           sx={{
             display: 'flex',
             mb: 3,
@@ -170,11 +145,11 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ onViewDetails, onEsti
               <HomeWorkIcon fontSize="inherit" />
             </Icon>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#181a1a' }}>{property.user_name}</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#181a1a' }}>{property.property_name}</Typography>
               <Typography variant="body2" sx={{ color: '#45591c' }}>{property.state}</Typography>
               <Typography variant="body2" sx={{ color: '#45591c' }}>{property.city}</Typography>
               <Typography variant="body2" sx={{ color: '#4e342e', mt: 1 }}>Built-up Area: {property.builtup_area}</Typography>
-              <Typography variant="body2" sx={{ color: '#4e342e' }}>Owner: {property.property_name}</Typography>
+              <Typography variant="body2" sx={{ color: '#4e342e' }}>Owner: {property.user_name}</Typography>
             </Box>
           </Box>
 
@@ -185,7 +160,6 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ onViewDetails, onEsti
             </Typography>
             <Button
               variant="outlined"
-              onClick={() => onViewDetails(property._id)}
               sx={{
                 color: '#0288d1',
                 borderColor: '#0288d1',
@@ -195,6 +169,7 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ onViewDetails, onEsti
                   boxShadow: '0 4px 10px rgba(2, 136, 209, 0.3)',
                 },
               }}
+              onClick={() => onViewDetails(property.user_email)}
             >
               View Details
             </Button>
@@ -203,7 +178,6 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ onViewDetails, onEsti
           <Box sx={{ textAlign: 'right', minWidth: '150px' }}>
             <Button
               variant="contained"
-              onClick={() => onEstimate(property.id)}
               sx={{
                 px: 3,
                 py: 1.5,
@@ -216,12 +190,13 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ onViewDetails, onEsti
                   boxShadow: '0px 8px 20px rgba(230, 74, 25, 0.6)',
                 },
               }}
+              onClick={() => handleEstimate(property)}
             >
               Estimate
             </Button>
           </Box>
         </Card>
-      ))} */}
+      ))}
     </Box>
   );
 };

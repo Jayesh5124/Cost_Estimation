@@ -8,27 +8,20 @@ const sendResponse = (res: Response, status: number, data: any) => {
 
 export const createConstructor = async (req: Request, res: Response) => {
   try {
-    // const { email, password, name, consid } = req.body;
     const { email, password, name } = req.body;
 
     if (!email?.trim() || !password?.trim() || !name?.trim()) {
-      return sendResponse(res, 400, { error: 'consid, name, email and password are required' });
+      return sendResponse(res, 400, { error: 'name, email and password are required' });
     }
 
-    // const [existingEmail, existingconsid] = await Promise.all([
     const existingEmail = await Constructor.findOne({ email });
-      // Constructor.findOne({ consid })
 
     if (existingEmail) {
       return sendResponse(res, 400, { error: 'Email already registered' });
     }
-    // if (existingconsid) {
-    //   return sendResponse(res, 400, { error: 'consid already exists' });
-    // }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await Constructor.create({
-      // consid,
       name,
       email,
       password: hashedPassword
