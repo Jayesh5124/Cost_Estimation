@@ -1,6 +1,7 @@
 // services/areaRequestService.ts
 
-import AreaRequest, { IAreaRequest } from '../models/areaRequest';
+import { AreaRequestModel as AreaRequest, IAreaRequest } from '../models/areaRequest';
+
 
 export class AreaRequestService {
     async createAreaRequest(data: Omit<IAreaRequest, '_id' | 'createdAt' | 'updatedAt'>): Promise<IAreaRequest> {
