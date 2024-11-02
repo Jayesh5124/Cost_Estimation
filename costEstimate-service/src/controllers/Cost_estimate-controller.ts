@@ -132,15 +132,15 @@ export const quantityWiseCalculation = async (req: Request, res: Response) => {
     const fittings = 22.8/100 * cost;
     const finishers = 16.5/100 * cost;
 
-    try {
-        const response = await axios.post(`http://localhost:3000/api/reports/generate/pieChart`, {data: [cementCost, sandCost, aggregateCost, steelCost, finishers, fittings]});
-        const project = response.data;
-        res.status(200).json({cementReq, cementCost, sandReq, sandCost, aggregateReq, aggregateCost, steelReq, steelCost, paintReq, bricks, fittings, finishers, project});
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to fetch bar chart data' });
-        return;
-    }
+    // try {
+    //     const response = await axios.post(`http://localhost:3000/api/reports/generate/pieChart`, {data: [cementCost, sandCost, aggregateCost, steelCost, finishers, fittings]});
+    //     const project = response.data;
+    //     res.status(200).json({cementReq, cementCost, sandReq, sandCost, aggregateReq, aggregateCost, steelReq, steelCost, paintReq, bricks, fittings, finishers, project});
+    // } catch (error) {
+    //     console.error(error);
+    //     res.status(500).json({ error: 'Failed to fetch bar chart data' });
+    //     return;
+    // }
 
     
 }
