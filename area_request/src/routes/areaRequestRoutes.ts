@@ -12,7 +12,7 @@ import {
 const router = express.Router();
 
 // Define routes
-router.post('/area-requests', createAreaRequest);
+router.post('/area-requests', createAreaRequest as any);
 router.get('/area-requests', getAllAreaRequests);
 router.get('/area-requests/:id', getAreaRequestById);
 router.put('/area-requests/:id', updateAreaRequest);

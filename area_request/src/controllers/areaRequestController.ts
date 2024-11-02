@@ -155,8 +155,7 @@ export const createAreaRequest = async (req: Request, res: Response) => {
 
         await areaRequest.save();
         res.status(201).json(areaRequest);
-    } catch (error) {
-        console.error('Error creating area request:', error);
+    } catch (error) {        console.error('Error creating area request:', error);
         res.status(500).json({ error: 'Failed to create area request' });
     }
 };

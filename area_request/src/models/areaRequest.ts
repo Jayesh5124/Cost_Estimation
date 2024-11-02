@@ -36,13 +36,13 @@ const AreaRequestSchema = new Schema<IAreaRequest>(
         property_type: { type: String, required: true },
         flats_per_floor: { type: Number, required: false },
         cabins_needed: { type: Number, required: false },
-        land_clearance_needed: { type: Boolean, required: true },
+        land_clearance_needed: { type: Boolean, required: false },
         land_clearance: { type: Number, required: false },
-        floors_needed: { type: Number, required: true },
+        floors_needed: { type: Number, required: false },
         isEstimated: { type: Boolean, required: false, default: false }, // Adding default value
         isStartBuild: { type: Boolean, required: false, default: false }, // Adding default value
         constructorList: [{ // Define as an array of objects
-            constructorName: { type: String, required: true },
+            constructorName: { type: String, required: false},
             contactInfo: { type: String, required: false }
         }]
     },

@@ -39,7 +39,7 @@ app.use(cors({
 }));
 
 // Connect to MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/local')
+mongoose.connect('mongodb://127.0.0.1:27017/cost-estimate')
 .then(() => {
   console.log('Connected to MongoDB');
 })
