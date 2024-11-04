@@ -12,11 +12,11 @@ import {
 } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const PropertyDetailsForm: React.FC = () => {
   const location = useLocation();
-  const userEmail = (location.state as { user_email: string })?.user_email; 
-  const userName = (location.state as { user_name: string })?.user_name;
+  const { userEmail, userName } = useAuth();
 
   const [city, setCity] = useState('');
   const [stateName, setStateName] = useState('');
