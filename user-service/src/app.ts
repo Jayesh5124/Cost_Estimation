@@ -31,6 +31,11 @@ if (!MONGO_URI) {
     console.error('Error: MONGO_URI is not defined in the environment variables');
     process.exit(1);
 }
+const crypto = require('crypto');
+
+// Generate a random 256-bit (32 bytes) secret key
+// const secretKey = crypto.randomBytes(32).toString('hex');
+// console.log(`Your secret key: ${secretKey}`);
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log('Connected to MongoDB'))
