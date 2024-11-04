@@ -9,6 +9,7 @@ interface IConstructor {
 export interface IAreaRequest extends Document {
     user_email: string;
     user_name: string;
+    constructor_email: string;
     city: string;
     state: string;
     builtup_area: number;
@@ -29,6 +30,7 @@ const AreaRequestSchema = new Schema<IAreaRequest>(
     {
         user_email: { type: String, required: true },
         user_name: { type: String, required: true },
+        constructor_email: { type: String, required: false },
         city: { type: String, required: true },
         state: { type: String, required: true },
         builtup_area: { type: Number, required: true },
