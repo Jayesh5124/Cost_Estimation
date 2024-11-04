@@ -130,7 +130,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
       if (response.data.token) {
         // Store token and user details in session storage
-        sessionStorage.setItem('token', response.data.token);
+        if(type==='user'){
+          sessionStorage.setItem('token', response.data.token);
         sessionStorage.setItem('userEmail', response.data.user_email);  // Access `user_email` directly
         sessionStorage.setItem('userName', response.data.user_name);    // Access `user_name` directly
   
@@ -138,7 +139,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsAuthenticated(true);
         setUserType(type);
         setUserEmail(response.data.user_email);  // Set state for `userEmail`
-        setUserName(response.data.user_name);    // Set state for `userName`
+        setUserName(response.data.user_name);  
+        }
+        else{
+        sessionStorage.setItem('token', response.data.token);
+        sessionStorage.setItem('userEmail', response.data.user.email);  // Access `user_email` directly
+        sessionStorage.setItem('userName', response.data.user.name);    // Access `user_name` directly
+  
+        // Update state variables
+        setIsAuthenticated(true);
+        setUserType(type);
+        setUserEmail(response.data.user.email);  // Set state for `userEmail`
+        setUserName(response.data.user.name);  
+        }  // Set state for `userName`
       } else {
         throw new Error('Login failed');
       }
