@@ -1,221 +1,13 @@
-// import {
-//     Box,
-//     Typography,
-//     Table,
-//     TableBody,
-//     TableCell,
-//     TableContainer,
-//     TableHead,
-//     TableRow,
-//     Paper,
-//     Button,
-//     RadioGroup,
-//     FormControlLabel,
-//     Radio,
-//   } from '@mui/material';
-//   import { useState } from 'react';
-//   import CostBreakdownChart from '../user_components/breakDownCharts'; // Adjust the path as necessary
-//   import { useLocation } from 'react-router-dom';
-  
-//   const resourcesData = [
-//     { id: 1, resource: 'Cement', quantity: '50 bags', amount: 1000 },
-//     { id: 2, resource: 'Sand', quantity: '15 m³', amount: 800 },
-//     { id: 3, resource: 'Aggregate', quantity: '20 m³', amount: 700 },
-//     { id: 4, resource: 'Steel', quantity: '200 kg', amount: 900 },
-//     { id: 5, resource: 'Paint', quantity: '40 L', amount: 400 },
-//     { id: 6, resource: 'Bricks', quantity: '2000 pcs', amount: 600 },
-//     { id: 7, resource: 'Flooring', quantity: '100 m²', amount: 800 },
-//   ];
-  
-//   const CostByResourceAllocation: React.FC = () => {
-//     const location = useLocation();
-//     const { estimationResult, total_cost } = location.state || { estimationResult: 0, total_cost: 0 };
-  
-//     // Update resourcesData based on total cost
-//     const updatedResourcesData = resourcesData.map(resource => ({
-//       ...resource,
-//       amount: Math.round((resource.amount / 2700) * total_cost) // Adjust the base amounts proportionally
-//     }));
-  
-//     const [selectedQuality, setSelectedQuality] = useState<{ [key: number]: string }>({});
-//     const [costData, setCostData] = useState<{ resource: string; amount: number }[]>(
-//       updatedResourcesData.map(resource => ({
-//         resource: resource.resource,
-//         amount: resource.amount
-//       }))
-//     );
-  
-//     // Add new state to track if estimate has been calculated
-//     const [isEstimateCalculated, setIsEstimateCalculated] = useState(false);
-  
-//     const handleQualityChange = (resourceId: number, quality: string) => {
-//       setSelectedQuality((prev) => ({
-//         ...prev,
-//         [resourceId]: quality,
-//       }));
-//     };
-  
-//     const handleCalculateEstimate = () => {
-//       const calculatedCosts = updatedResourcesData.map((resource) => {
-//         const baseAmount = resource.amount;
-//         const qualityMultiplier = selectedQuality[resource.id] === 'Premium' ? 1.5 : selectedQuality[resource.id] === 'Moderate' ? 1.2 : 1; // Simple multipliers based on quality
-//         return {
-//           resource: resource.resource,
-//           amount: baseAmount * qualityMultiplier,
-//         };
-//       });
-//       setCostData(calculatedCosts); // Update the cost data
-//       setIsEstimateCalculated(true); // Set to true when estimate is calculated
-//       console.log("Calculating estimate with selected qualities:", selectedQuality);
-//     };
-  
-//     return (
-//       <Box sx={{ padding: 2, background: '#f0f0f0', minHeight: '100vh' }}>
-//         <Typography
-//           variant="h3"
-//           sx={{
-//             fontWeight: 'bold',
-//             color: '#263238',
-//             textAlign: 'center',
-//             marginBottom: 4,
-//             textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
-//             fontFamily: 'Arial, sans-serif',
-//           }}
-//         >
-//           Cost By Resource Allocation
-//         </Typography>
-  
-//         {/* Add Total Cost Display */}
-//         <Box
-//           sx={{
-//             backgroundColor: '#ffffff',
-//             padding: 3,
-//             borderRadius: '8px',
-//             marginBottom: 3,
-//             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-//             display: 'flex',
-//             flexDirection: 'column',
-//             alignItems: 'center',
-//             gap: 1
-//           }}
-//         >
-//           <Typography variant="h6" color="text.secondary">
-//             Total Estimated Cost
-//           </Typography>
-//           <Typography
-//             variant="h4"
-//             sx={{
-//               fontWeight: 'bold',
-//               color: '#0d47a1',
-//               display: 'flex',
-//               alignItems: 'center',
-//               gap: 1
-//             }}
-//           >
-//             ₹{total_cost.toLocaleString()}
-//           </Typography>
-//         </Box>
-  
-//         <TableContainer component={Paper} sx={{ boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)', borderRadius: '8px' }}>
-//           <Table sx={{ minWidth: 650 }} aria-label="simple table">
-//             <TableHead>
-//               <TableRow>
-//                 <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1' }}>Resource</TableCell>
-//                 <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1' }}>Quantity</TableCell>
-//                 <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1', textAlign: 'center' }}>Quality</TableCell>
-//                 <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1' }}>Amount</TableCell>
-//               </TableRow>
-//             </TableHead>
-//             <TableBody>
-//               {updatedResourcesData.map((row) => (
-//                 <TableRow key={row.id} sx={{ '&:nth-of-type(odd)': { backgroundColor: '#f5f5f5' } }}>
-//                   <TableCell component="th" scope="row" sx={{ color: '#45591c', borderBottom: '1px solid #ccc' }}>
-//                     {row.resource}
-//                   </TableCell>
-//                   <TableCell sx={{ color: '#45591c', borderBottom: '1px solid #ccc' }}>{row.quantity}</TableCell>
-//                   <TableCell sx={{ color: '#45591c', borderBottom: '1px solid #ccc', minWidth: '300px' }}>
-//                     <RadioGroup
-//                       value={selectedQuality[row.id] || ''}
-//                       onChange={(event) => handleQualityChange(row.id, event.target.value)}
-//                       row
-//                       sx={{
-//                         justifyContent: 'space-between',
-//                         '& .MuiFormControlLabel-root': {
-//                           margin: '0 8px'
-//                         }
-//                       }}
-//                     >
-//                       <FormControlLabel value="Basic" control={<Radio />} label="Basic" />
-//                       <FormControlLabel value="Moderate" control={<Radio />} label="Moderate" />
-//                       <FormControlLabel value="Premium" control={<Radio />} label="Premium" />
-//                     </RadioGroup>
-//                   </TableCell>
-//                   <TableCell sx={{ color: '#45591c', borderBottom: '1px solid #ccc' }}>{row.amount}</TableCell>
-//                 </TableRow>
-//               ))}
-//             </TableBody>
-//           </Table>
-//         </TableContainer>
-  
-//         {/* Calculate Estimate Button */}
-//         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-//           <Button
-//             variant="contained"
-//             onClick={handleCalculateEstimate}
-//             sx={{
-//               backgroundColor: '#0d47a1',
-//               color: '#fff',
-//               padding: '10px 20px',
-//               '&:hover': {
-//                 backgroundColor: '#0a367a',
-//                 boxShadow: '0px 6px 16px rgba(0, 0, 0, 0.3)',
-//               },
-//               borderRadius: '8px',
-//               boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.3)',
-//             }}
-//           >
-//             Calculate Estimate
-//           </Button>
-//         </Box>
-  
-//         {/* Display Cost Breakdown Chart */}
-//         {isEstimateCalculated && costData.length > 0 && (
-//           <Box sx={{ mt: 4 }}>
-//             <Typography variant="h4" sx={{ textAlign: 'center', marginBottom: 2 }}>
-//               Cost Breakdown
-//             </Typography>
-//             <CostBreakdownChart data={costData} />
-//           </Box>
-//         )}
-//       </Box>
-//     );
-//   };
-  
-//   export default CostByResourceAllocation;
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Button, RadioGroup, FormControlLabel, Radio,
-  CircularProgress
+  TableHead, TableRow, Paper, Button, RadioGroup, FormControlLabel, Radio
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import CostBreakdownChart from '../user_components/breakDownCharts';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface ResourceData {
   resource: string;
@@ -241,32 +33,70 @@ interface QuantityResponse {
 
 const CostByResourceAllocation: React.FC = () => {
   const location = useLocation();
-  const { estimationResult, total_cost } = location.state || { estimationResult: 0, total_cost: 0 };
+  const { estimationResult, total_cost, builtup_area } = location.state || { 
+    estimationResult: 0, 
+    total_cost: 0, 
+    builtup_area: 0 
+  };
+
+  console.log('Component rendered with:', {
+    estimationResult,
+    total_cost,
+    builtup_area,
+    locationState: location.state
+  });
 
   const [resourcesData, setResourcesData] = useState<ResourceData[]>([]);
   const [selectedQuality, setSelectedQuality] = useState<{ [key: number]: string }>({});
   const [costData, setCostData] = useState<{ resource: string; amount: number }[]>([]);
   const [isEstimateCalculated, setIsEstimateCalculated] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
-  // Fetch initial quantities
   useEffect(() => {
-    fetchQuantities();
-  }, [total_cost]);
+    if (total_cost && estimationResult && !hasAttemptedFetch) {
+      setHasAttemptedFetch(true);
+      fetchQuantities();
+    } else if (!total_cost || !estimationResult) {
+      setResourcesData([]);
+      console.warn('Missing required data:', { total_cost, estimationResult });
+    }
+  }, [total_cost, estimationResult, hasAttemptedFetch]);
 
   const fetchQuantities = async () => {
     try {
-      setIsLoading(true);
-      const response = await axios.get(`http://localhost:3005/api/cost-estimates/quantity-wise/${total_cost}/${estimationResult}`);
+      if (!total_cost || !estimationResult || total_cost <= 0 || estimationResult <= 0) {
+        throw new Error('Invalid total_cost or estimationResult');
+      }
+
+      const response = await axios.get(
+        `http://localhost:3005/api/cost-estimates/quantity-wise/${builtup_area}/${total_cost}`,
+        { timeout: 5000 }
+      );
+      
+      console.log(total_cost, estimationResult);
+      
+      console.log('API Response:', response.data);
+      
+      if (!response.data) {
+        throw new Error('No data received from API');
+      }
+      
       const data: QuantityResponse = response.data;
 
+      if (data.cementReq === undefined || data.sandReq === undefined || 
+          data.aggregateReq === undefined || data.steelReq === undefined || 
+          data.paintReq === undefined || data.bricks === undefined) {
+        throw new Error('Missing required data fields');
+      }
+
       const newResourcesData: ResourceData[] = [
-        { id: 1, resource: 'Cement', quantity: `${data.cementReq.toFixed(2)} bags`, amount: data.cementCost },
-        { id: 2, resource: 'Sand', quantity: `${data.sandReq.toFixed(2)} m³`, amount: data.sandCost },
-        { id: 3, resource: 'Aggregate', quantity: `${data.aggregateReq.toFixed(2)} m³`, amount: data.aggregateCost },
-        { id: 4, resource: 'Steel', quantity: `${data.steelReq.toFixed(2)} kg`, amount: data.steelCost },
-        { id: 5, resource: 'Paint', quantity: `${data.paintReq.toFixed(2)} L`, amount: data.finishers },
-        { id: 6, resource: 'Bricks', quantity: `${data.bricks} pcs`, amount: data.fittings },
+        { id: 1, resource: 'Cement', quantity: `${data.cementReq.toFixed(2)} bags`, amount: data.cementCost || 0 },
+        { id: 2, resource: 'Sand', quantity: `${data.sandReq.toFixed(2)} m³`, amount: data.sandCost || 0 },
+        { id: 3, resource: 'Aggregate', quantity: `${data.aggregateReq.toFixed(2)} m³`, amount: data.aggregateCost || 0 },
+        { id: 4, resource: 'Steel', quantity: `${data.steelReq.toFixed(2)} kg`, amount: data.steelCost || 0 },
+        { id: 5, resource: 'Paint', quantity: `${data.paintReq.toFixed(2)} L`, amount: data.finishers || 0 },
+        { id: 6, resource: 'Bricks', quantity: `${data.bricks.toString()} pcs`, amount: data.fittings || 0 },
       ];
 
       setResourcesData(newResourcesData);
@@ -276,8 +106,18 @@ const CostByResourceAllocation: React.FC = () => {
       })));
     } catch (error) {
       console.error('Error fetching quantities:', error);
-    } finally {
-      setIsLoading(false);
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          console.error('Request timed out');
+        }
+        console.error('Axios error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        });
+      }
+      setResourcesData([]);
+      setCostData([]);
     }
   };
 
@@ -290,32 +130,133 @@ const CostByResourceAllocation: React.FC = () => {
 
   const handleCalculateEstimate = async () => {
     try {
-      setIsLoading(true);
       await fetchQuantities();
       
       const calculatedCosts = resourcesData.map((resource) => {
         const baseAmount = resource.amount;
-        const qualityMultiplier = selectedQuality[resource.id] === 'Premium' ? 1.5 : 
-                                 selectedQuality[resource.id] === 'Moderate' ? 1.2 : 1;
+        let adjustment = 0;
+        
+        switch (selectedQuality[resource.id]) {
+          case 'Basic':
+            adjustment = -10000;
+            break;
+          case 'Moderate':
+            adjustment = 15000;
+            break;
+          case 'Premium':
+            adjustment = 30000;
+            break;
+          default:
+            adjustment = 0;
+        }
+
         return {
-          resource: resource.resource,
-          amount: baseAmount * qualityMultiplier,
+          ...resource,
+          amount: Math.max(0, baseAmount + adjustment),
         };
       });
       
-      setCostData(calculatedCosts);
+      setResourcesData(calculatedCosts);
+      setCostData(calculatedCosts.map(resource => ({
+        resource: resource.resource,
+        amount: resource.amount
+      })));
       setIsEstimateCalculated(true);
+      setShowReport(true);
     } catch (error) {
       console.error('Error calculating estimate:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  if (isLoading) {
+  const handleDownloadReport = async () => {
+    const reportElement = document.getElementById('report-section');
+    const chartElement = document.getElementById('cost-breakdown-chart');
+    if (!reportElement || !chartElement) return;
+
+    try {
+      const reportCanvas = await html2canvas(reportElement);
+      const chartCanvas = await html2canvas(chartElement);
+      
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      
+      const reportImgData = reportCanvas.toDataURL('image/png');
+      const reportHeight = (reportCanvas.height * pageWidth) / reportCanvas.width;
+      pdf.addImage(reportImgData, 'PNG', 0, 0, pageWidth, reportHeight);
+      
+      pdf.addPage();
+      const chartImgData = chartCanvas.toDataURL('image/png');
+      const chartHeight = (chartCanvas.height * pageWidth) / chartCanvas.width;
+      pdf.addImage(chartImgData, 'PNG', 0, 0, pageWidth, chartHeight);
+      
+      pdf.save('construction-cost-report.pdf');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
+  };
+
+  const renderReport = () => {
+    if (!showReport || !isEstimateCalculated) return null;
+
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
+      <Box id="report-section" sx={{ mt: 4, mb: 4, backgroundColor: '#fff', padding: 3, borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}>
+        <Typography variant="h4" sx={{ textAlign: 'center', mb: 3, color: '#0d47a1' }}>
+          Construction Cost Report
+        </Typography>
+
+        <Typography variant="h6" sx={{ mb: 2 }}>Project Details:</Typography>
+        <Box sx={{ mb: 3 }}>
+          <Typography>Built-up Area: {builtup_area} sq ft</Typography>
+          <Typography>Total Estimated Cost: ₹{total_cost.toLocaleString()}</Typography>
+        </Box>
+
+        <Typography variant="h6" sx={{ mb: 2 }}>Resource Breakdown:</Typography>
+        <TableContainer component={Paper} sx={{ mb: 3 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold' }}>Resource</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Quantity</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Quality</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Amount (₹)</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {resourcesData.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.resource}</TableCell>
+                  <TableCell>{row.quantity}</TableCell>
+                  <TableCell>{selectedQuality[row.id] || 'Standard'}</TableCell>
+                  <TableCell>{row.amount.toLocaleString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+          <Button
+            variant="contained"
+            onClick={handleDownloadReport}
+            sx={{
+              backgroundColor: '#45591c',
+              '&:hover': { backgroundColor: '#2f3d13' },
+              marginLeft: 2
+            }}
+          >
+            Download Report
+          </Button>
+        </Box>
+      </Box>
+    );
+  };
+
+  if (!total_cost || !estimationResult) {
+    return (
+      <Box sx={{ padding: 2, textAlign: 'center' }}>
+        <Typography color="error">
+          Missing required data. Please ensure all values are provided.
+        </Typography>
       </Box>
     );
   }
@@ -429,8 +370,10 @@ const CostByResourceAllocation: React.FC = () => {
         </Button>
       </Box>
 
+      {renderReport()}
+
       {isEstimateCalculated && costData.length > 0 && (
-        <Box sx={{ mt: 4 }}>
+        <Box sx={{ mt: 4 }} id="cost-breakdown-chart">
           <Typography variant="h4" sx={{ textAlign: 'center', marginBottom: 2 }}>
             Cost Breakdown
           </Typography>

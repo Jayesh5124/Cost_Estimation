@@ -114,33 +114,36 @@ export const quantityWiseCalculation = async (req: Request, res: Response) => {
     const cost = Number(req.params.cost);
     const area = Number(req.params.area);
 
-    const cementReq = area * 0.4;
+    const cementReq = Math.ceil(area * 0.4);
     const cementCost = 16.4/100 * cost;
 
-    const sandReq = area * 0.816;
+    const sandReq = Number((area * 0.816).toFixed(2));
     const sandCost = 12.3/100 * cost;
 
-    const aggregateReq = area * 0.608;
+    const aggregateReq = Number((area * 0.608).toFixed(2));
     const aggregateCost = 7.4/100 * cost;
 
-    const steelReq = area * 4;
+    const steelReq = Math.ceil(area * 4);
     const steelCost = 24.6/100 * cost;
 
-    const paintReq = area * 0.18;
-    const bricks = area*8;
+    const paintReq = Number((area * 0.18).toFixed(2));
+    const bricks = Math.ceil(area * 8);
     
     const fittings = 22.8/100 * cost;
     const finishers = 16.5/100 * cost;
 
-    // try {
-    //     const response = await axios.post(`http://localhost:3000/api/reports/generate/pieChart`, {data: [cementCost, sandCost, aggregateCost, steelCost, finishers, fittings]});
-    //     const project = response.data;
-    //     res.status(200).json({cementReq, cementCost, sandReq, sandCost, aggregateReq, aggregateCost, steelReq, steelCost, paintReq, bricks, fittings, finishers, project});
-    // } catch (error) {
-    //     console.error(error);
-    //     res.status(500).json({ error: 'Failed to fetch bar chart data' });
-    //     return;
-    // }
-
-    
+    res.status(200).json({
+        cementReq, 
+        cementCost, 
+        sandReq, 
+        sandCost, 
+        aggregateReq, 
+        aggregateCost, 
+        steelReq, 
+        steelCost, 
+        paintReq, 
+        bricks, 
+        fittings, 
+        finishers
+    });
 }
