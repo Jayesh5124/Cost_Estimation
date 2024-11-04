@@ -41,8 +41,19 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
 
   const getCityType = (city: string): number => {
     const tier1Cities = [
-      'mumbai', 'delhi', 'bangalore', 'chennai', 'kolkata', 
+      'mumbai', 'delhi', 'bangalore', 'chennai', 'kolkata',
       'hyderabad', 'pune', 'ahmedabad', 'bengaluru', 'new delhi',
+      'surat', 'lucknow', 'jaipur', 'kanpur', 'nagpur',
+      'indore', 'thane', 'bhopal', 'visakhapatnam', 'pimpri-chinchwad',
+      'patna', 'vadodara', 'ghaziabad', 'ludhiana', 'coimbatore',
+      'agra', 'madurai', 'nashik', 'faridabad', 'meerut',
+      'rajkot', 'varanasi', 'srinagar', 'aurangabad', 'dhanbad',
+      'amritsar', 'navi mumbai', 'allahabad', 'ranchi', 'howrah',
+      'jabalpur', 'gwalior', 'vijayawada', 'jodhpur', 'raipur',
+      'kota', 'guwahati', 'chandigarh', 'thiruvananthapuram', 'solapur',
+      'hubli-dharwad', 'mysore', 'tiruchirappalli', 'bareilly', 'aligarh',
+      'tiruppur', 'gurgaon', 'moradabad', 'jalandhar', 'bhubaneswar',
+      'salem', 'warangal', 'guntur', 'bhiwandi', 'saharanpur'
     ];
     return tier1Cities.includes(city.toLowerCase()) ? 2 : 1;
   };
@@ -59,6 +70,7 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
       navigate('/cost_estimation', {
         state: {
           email: property.user_email,
+          user_email: property.user_email,
           estimationResult: response.data,
           total_cost: response.data,
           builtup_area: property.builtup_area,

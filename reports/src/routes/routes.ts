@@ -1,37 +1,80 @@
-import express from 'express';
-import {
-    getReports,
-    getReportById,
-    createReport,
-    updateReport,
-    deleteReport,
-    generateChart,
-    pieChart,
-    doughChart,
-} from '../controllers/controller';
+import express, { Request, Response } from 'express';
+import { Report } from '../model/reportSchema';
 
 const router = express.Router();
 
-// GET all reports
-router.get('/', getReports);
+router.post('/save', async (req, res) => {
+  try {
+    const {
+      clientEmail,
+      builtupArea,
+      totalCost,
+      resourcesData,
+      pdfReport
+    } = req.body;
 
-// Change the route to a more specific path
-router.get('/generate/barChart', generateChart as any);
+    const report = new Report({
+      clientEmail,
+      builtupArea,
+      totalCost,
+      resourcesData,
+      pdfReport
+    });
 
-router.post('/generate/pieChart', pieChart as any);
+    await report.save();
 
-router.get('/generate/doughChart', doughChart as any);
+    res.json({
+      success: true,
+      message: 'Report saved successfully'
+    });
+  } catch (error) {
+    console.error('Error saving report:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to save report'
+    });
+  }
+});
 
-// GET single report by ID
-router.get('/:id', getReportById as any);
+router.get('/all', async (req, res) => {
+  try {
+    const reports = await Report.find();
+    res.json({
+      success: true,
+      data: reports
+    });
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch reports'
+    });
+  }
+});
 
-// POST new report
-router.post('/', createReport);
+router.get('/email/:clientEmail', async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { clientEmail } = req.params;
+    const reports = await Report.find({ clientEmail });
+    
+    if (reports.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No reports found for this email'
+      });
+    }
 
-// PUT update report
-router.put('/:id', updateReport as any);
-
-// DELETE report
-router.delete('/:id', deleteReport as any);
+    res.json({
+      success: true,
+      data: reports
+    });
+  } catch (error) {
+    console.error('Error fetching reports by email:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch reports'
+    });
+  }
+});
 
 export default router;

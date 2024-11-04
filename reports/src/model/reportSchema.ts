@@ -1,19 +1,33 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface IReport extends Document {
-    report_id: number;
-    report_name: string;
-    report_description: string;
-    estimation_id: number;
-    reports: string;
-}
+const ReportSchema = new mongoose.Schema({
+  clientEmail: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  builtupArea: {
+    type: Number,
+    required: true
+  },
+  totalCost: {
+    type: Number,
+    required: true
+  },
+  resourcesData: [{
+    resource: String,
+    quantity: String,
+    amount: Number,
+    quality: String
+  }],
+  pdfReport: {
+    type: String,  // Store PDF as base64 string
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
 
-const ReportSchema: Schema = new Schema({
-    report_id: { type: Number, required: true },
-    report_name: { type: String, required: true },
-    report_description: { type: String, required: true },
-    estimation_id: { type: Number, required: true },
-    reports: { type: String, required: false }, // Changed File to String to store file path
-}); 
-
-export default mongoose.model<IReport>('Report', ReportSchema);
+export const Report = mongoose.model('Report', ReportSchema);

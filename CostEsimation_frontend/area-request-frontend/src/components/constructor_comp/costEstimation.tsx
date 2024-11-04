@@ -31,18 +31,29 @@ interface QuantityResponse {
   finishers: number;
 }
 
+interface SaveReportResponse {
+  success: boolean;
+  message: string;
+}
+
 const CostByResourceAllocation: React.FC = () => {
   const location = useLocation();
-  const { estimationResult, total_cost, builtup_area } = location.state || { 
+  const { estimationResult, total_cost, builtup_area, email, user_email } = location.state || { 
     estimationResult: 0, 
     total_cost: 0, 
-    builtup_area: 0 
+    builtup_area: 0,
+    email: '',
+    user_email: ''
   };
+
+  const clientEmail = email || user_email || 'Not provided';
 
   console.log('Component rendered with:', {
     estimationResult,
     total_cost,
     builtup_area,
+    email,
+    user_email,
     locationState: location.state
   });
 
@@ -52,6 +63,8 @@ const CostByResourceAllocation: React.FC = () => {
   const [isEstimateCalculated, setIsEstimateCalculated] = useState(false);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [baseResourceData, setBaseResourceData] = useState<ResourceData[]>([]);
 
   useEffect(() => {
     if (total_cost && estimationResult && !hasAttemptedFetch) {
@@ -99,6 +112,7 @@ const CostByResourceAllocation: React.FC = () => {
         { id: 6, resource: 'Bricks', quantity: `${data.bricks.toString()} pcs`, amount: data.fittings || 0 },
       ];
 
+      setBaseResourceData(newResourcesData);
       setResourcesData(newResourcesData);
       setCostData(newResourcesData.map(resource => ({
         resource: resource.resource,
@@ -128,23 +142,21 @@ const CostByResourceAllocation: React.FC = () => {
     }));
   };
 
-  const handleCalculateEstimate = async () => {
+  const handleCalculateEstimate = () => {
     try {
-      await fetchQuantities();
-      
-      const calculatedCosts = resourcesData.map((resource) => {
+      const calculatedCosts = baseResourceData.map((resource) => {
         const baseAmount = resource.amount;
         let adjustment = 0;
         
         switch (selectedQuality[resource.id]) {
           case 'Basic':
-            adjustment = -10000;
+            adjustment = -11234;
             break;
           case 'Moderate':
-            adjustment = 15000;
+            adjustment = 15677;
             break;
           case 'Premium':
-            adjustment = 30000;
+            adjustment = 30289;
             break;
           default:
             adjustment = 0;
@@ -195,6 +207,70 @@ const CostByResourceAllocation: React.FC = () => {
     }
   };
 
+  const handleSaveReport = async () => {
+    if (!showReport || !isEstimateCalculated) {
+      console.warn('No report to save');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Generate PDF data
+      const reportElement = document.getElementById('report-section');
+      const chartElement = document.getElementById('cost-breakdown-chart');
+      if (!reportElement || !chartElement) return;
+
+      const reportCanvas = await html2canvas(reportElement);
+      const chartCanvas = await html2canvas(chartElement);
+      
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      
+      const reportImgData = reportCanvas.toDataURL('image/png');
+      const reportHeight = (reportCanvas.height * pageWidth) / reportCanvas.width;
+      pdf.addImage(reportImgData, 'PNG', 0, 0, pageWidth, reportHeight);
+      
+      pdf.addPage();
+      const chartImgData = chartCanvas.toDataURL('image/png');
+      const chartHeight = (chartCanvas.height * pageWidth) / chartCanvas.width;
+      pdf.addImage(chartImgData, 'PNG', 0, 0, pageWidth, chartHeight);
+      
+      // Convert PDF to base64
+      const pdfData = pdf.output('datauristring');
+
+      const reportData = {
+        clientEmail,
+        builtupArea: builtup_area,
+        totalCost: total_cost,
+        resourcesData,
+        pdfReport: pdfData,
+        createdAt: new Date().toISOString()
+      };
+
+      const response = await axios.post<SaveReportResponse>(
+        'http://localhost:3006/api/reports/save',
+        reportData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        alert('Report saved successfully!');
+      } else {
+        throw new Error(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error saving report:', error);
+      alert('Failed to save report. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const renderReport = () => {
     if (!showReport || !isEstimateCalculated) return null;
 
@@ -206,6 +282,7 @@ const CostByResourceAllocation: React.FC = () => {
 
         <Typography variant="h6" sx={{ mb: 2 }}>Project Details:</Typography>
         <Box sx={{ mb: 3 }}>
+          <Typography>Client Email: {clientEmail}</Typography>
           <Typography>Built-up Area: {builtup_area} sq ft</Typography>
           <Typography>Total Estimated Cost: ₹{total_cost.toLocaleString()}</Typography>
         </Box>
@@ -239,9 +316,19 @@ const CostByResourceAllocation: React.FC = () => {
             variant="contained"
             onClick={handleDownloadReport}
             sx={{
-              backgroundColor: '#45591c',
-              '&:hover': { backgroundColor: '#2f3d13' },
-              marginLeft: 2
+              backgroundColor: '#1976d2',
+              color: 'white',
+              padding: '10px 24px',
+              fontSize: '1rem',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              '&:hover': { 
+                backgroundColor: '#1565c0',
+                transform: 'translateY(-2px)',
+                transition: 'all 0.2s ease-in-out'
+              },
+              boxShadow: '0 3px 5px rgba(0,0,0,0.2)',
+              transition: 'all 0.2s ease-in-out'
             }}
           >
             Download Report
@@ -250,6 +337,37 @@ const CostByResourceAllocation: React.FC = () => {
       </Box>
     );
   };
+
+  const saveReportButton = (
+    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
+      <Button
+        variant="contained"
+        onClick={handleSaveReport}
+        disabled={!showReport || !isEstimateCalculated || isSaving}
+        sx={{
+          backgroundColor: '#2e7d32',
+          color: 'white',
+          padding: '10px 24px',
+          fontSize: '1rem',
+          fontWeight: 'bold',
+          textTransform: 'none',
+          '&:hover': { 
+            backgroundColor: '#1b5e20',
+            transform: 'translateY(-2px)',
+            transition: 'all 0.2s ease-in-out'
+          },
+          '&:disabled': { 
+            backgroundColor: '#cccccc',
+            color: '#666666' 
+          },
+          boxShadow: '0 3px 5px rgba(0,0,0,0.2)',
+          transition: 'all 0.2s ease-in-out'
+        }}
+      >
+        {isSaving ? 'Saving...' : 'Save Report to Database'}
+      </Button>
+    </Box>
+  );
 
   if (!total_cost || !estimationResult) {
     return (
@@ -307,6 +425,8 @@ const CostByResourceAllocation: React.FC = () => {
         </Typography>
       </Box>
 
+      {saveReportButton}
+
       <TableContainer component={Paper} sx={{ boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)', borderRadius: '8px' }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -355,15 +475,21 @@ const CostByResourceAllocation: React.FC = () => {
           variant="contained"
           onClick={handleCalculateEstimate}
           sx={{
-            backgroundColor: '#0d47a1',
-            color: '#fff',
-            padding: '10px 20px',
+            backgroundColor: '#9c27b0',
+            color: 'white',
+            padding: '12px 32px',
+            fontSize: '1.1rem',
+            fontWeight: 'bold',
+            textTransform: 'none',
             '&:hover': {
-              backgroundColor: '#0a367a',
-              boxShadow: '0px 6px 16px rgba(0, 0, 0, 0.3)',
+              backgroundColor: '#7b1fa2',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 6px 12px rgba(0,0,0,0.3)',
+              transition: 'all 0.2s ease-in-out'
             },
-            borderRadius: '8px',
-            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.3)',
+            borderRadius: '25px',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+            transition: 'all 0.2s ease-in-out'
           }}
         >
           Calculate Estimate
