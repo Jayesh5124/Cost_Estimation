@@ -1,107 +1,3 @@
-// // controllers/areaRequestController.ts
-
-// import { Request, Response } from 'express';
-// import { AreaRequestService } from '../services/areaRequestService';
-// import {AreaRequestModel} from '../models/areaRequest';
-
-
-// const areaRequestService = new AreaRequestService();
-
-// // // Create a new area request
-// // export const createAreaRequest = async (req: Request, res: Response) => {
-// //     try {
-// //         const { user_email,user_name, city, state, builtup_area, property_name } = req.body;
-// //         const areaRequest = await areaRequestService.createAreaRequest({ user_email,user_name, city, state, builtup_area, property_name } as IAreaRequest);
-// //         res.status(201).json(areaRequest);
-// //     } catch (error) {
-// //         console.error(error);
-// //         res.status(500).json({ error: 'Failed to create area request' });
-// //     }
-// // };
-
-// export const createAreaRequest = async (req: Request, res: Response) => {
-//     try {
-//         const {
-//             user_email,
-//             user_name,
-//             city,
-//             state,
-//             builtup_area,
-//             property_name,
-//             property_type,
-//             flats_per_floor,
-//             cabins_needed,
-//             land_clearance_needed,
-//             land_clearance,
-//             floors_needed,
-//         } = req.body;
-
-//         const areaRequest = new AreaRequestModel({
-//             user_email,
-//             user_name,
-//             city,
-//             state,
-//             builtup_area,
-//             property_name,
-//             property_type,
-//             flats_per_floor: property_type === 'Residential' ? flats_per_floor : undefined,
-//             cabins_needed: property_type === 'Commercial' ? cabins_needed : undefined,
-//             land_clearance_needed,
-//             land_clearance: land_clearance_needed ? land_clearance : undefined,
-//             floors_needed,
-//         });
-
-//         await areaRequest.save();
-//         res.status(201).json(areaRequest);
-//     } catch (error) {
-//         console.error('Error creating area request:', error);
-//         res.status(500).json({ error: 'Failed to create area request' });
-//     }
-// };
-// // Get area request by ID
-// export const getAreaRequestById = async (req: Request, res: Response) => {
-//     try {
-//         const request = await areaRequestService.getAreaRequestById(req.params.id);
-//         if (request) {
-//             res.status(200).json(request);
-//         } else {
-//             res.status(404).json({ error: 'Area request not found' });
-//         }
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Failed to retrieve area request' });
-//     }
-// };
-
-// // Update area request
-// export const updateAreaRequest = async (req: Request, res: Response) => {
-//     try {
-//         const updatedRequest = await areaRequestService.updateAreaRequest(req.params.id, req.body);
-//         if (updatedRequest) {
-//             res.status(200).json(updatedRequest);
-//         } else {
-//             res.status(404).json({ error: 'Area request not found' });
-//         }
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Failed to update area request' });
-//     }
-// };
-
-// // Delete area request
-// export const deleteAreaRequest = async (req: Request, res: Response) => {
-//     try {
-//         const deletedRequest = await areaRequestService.deleteAreaRequest(req.params.id);
-//         if (deletedRequest) {
-//             res.status(204).send();
-//         } else {
-//             res.status(404).json({ error: 'Area request not found' });
-//         }
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Failed to delete area request' });
-//     }
-// };
 // controllers/areaRequestController.ts
 
 import { Request, Response } from 'express';
@@ -188,15 +84,36 @@ export const getAreaRequestById = async (req: Request, res: Response) => {
 // Update area request
 export const updateAreaRequest = async (req: Request, res: Response) => {
     try {
-        const updatedRequest = await areaRequestService.updateAreaRequest(req.params.id, req.body);
-        if (updatedRequest) {
-            res.status(200).json(updatedRequest);
-        } else {
-            res.status(404).json({ error: 'Area request not found' });
+        const userEmail = req.params.id; // This will be the client email
+        const { isEstimated, constructor_email } = req.body;
+
+        const updatedRequest = await AreaRequestModel.findOneAndUpdate(
+            { user_email: userEmail },
+            { 
+                isEstimated: isEstimated,
+                constructor_email: constructor_email 
+            },
+            { new: true }
+        );
+
+        if (!updatedRequest) {
+            return res.status(404).json({
+                success: false,
+                message: 'Area request not found'
+            });
         }
+
+        res.status(200).json({
+            success: true,
+            data: updatedRequest
+        });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to update area request' });
+        console.error('Error updating area request:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating area request',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
     }
 };
 

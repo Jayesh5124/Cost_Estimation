@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination } from '@mui/material';
+import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination, Modal, Paper } from '@mui/material';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 interface Report {
   _id: string;
   clientEmail: string;
+  constructorEmail: string;
   builtupArea: number;
   totalCost: number;
   resourcesData: any[];
+  pdfReport: string;
   createdAt: string;
+  __v: number;
 }
 
 interface PropertyBidProps {
@@ -23,12 +27,16 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
   const reportsPerPage = 5;
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchReports = async () => {
       setIsLoading(true);
+      console.log(sessionStorage.getItem('userEmail'));
+      
       try {
-        const response = await axios.get('http://localhost:3006/api/reports/all');
+        const response = await axios.get(`http://localhost:3006/api/reports/email/${sessionStorage.getItem('userEmail')}`);
         setReports(response.data.data);
       } catch (error) {
         console.error('Error fetching reports:', error);
@@ -58,6 +66,32 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page > totalPages ? totalPages : page);
+  };
+
+  const handleOpenModal = async (clientEmail: string) => {
+    try {
+      const response = await axios.get(`http://localhost:3006/api/reports/email/${clientEmail}`);
+      const reportData = response.data.data.find((report: Report) => report.clientEmail === clientEmail);
+      setSelectedReport(reportData);
+      setModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching report details:', error);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedReport(null);
+  };
+
+  const handleDownloadPDF = async () => {
+    if (selectedReport?.pdfReport) {
+      try {
+        window.open(selectedReport.pdfReport, '_blank');
+      } catch (error) {
+        console.error('Error downloading PDF:', error);
+      }
+    }
   };
 
   return (
@@ -144,6 +178,7 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
               <Typography variant="body2" sx={{ color: '#4e342e', mt: 1 }}>Built-up Area: {report.builtupArea} sq ft</Typography>
               <Typography variant="body2" sx={{ color: '#4e342e' }}>Total Cost: ₹{report.totalCost}</Typography>
               <Typography variant="body2" sx={{ color: '#45591c' }}>Created: {new Date(report.createdAt).toLocaleDateString()}</Typography>
+              <Typography variant="body2" sx={{ color: '#45591c' }}>Estimated By: {report.constructorEmail}</Typography>
             </Box>
           </Box>
 
@@ -154,7 +189,7 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
             </Typography>
             <Button
               variant="outlined"
-              onClick={() => onViewDetails(report._id)}
+              onClick={() => handleOpenModal(report.clientEmail)}
               sx={{
                 color: '#0288d1',
                 borderColor: '#0288d1',
@@ -203,6 +238,93 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
           />
         </Box>
       )}
+
+      {/* Add Modal */}
+      <Modal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        aria-labelledby="report-details-modal"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Paper
+          sx={{
+            width: '80%',
+            maxWidth: 800,
+            maxHeight: '90vh',
+            overflow: 'auto',
+            p: 4,
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            boxShadow: 24,
+          }}
+        >
+          {selectedReport && (
+            <>
+              <Typography variant="h4" sx={{ mb: 3, color: '#0d47a1' }}>
+                Report Details
+              </Typography>
+              
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  Client Information
+                </Typography>
+                <Typography><strong>Report ID:</strong> {selectedReport._id}</Typography>
+                <Typography><strong>Email:</strong> {selectedReport.clientEmail}</Typography>
+                <Typography><strong>Estimated By:</strong> {selectedReport.constructorEmail}</Typography>
+                <Typography><strong>Built-up Area:</strong> {selectedReport.builtupArea} sq ft</Typography>
+                <Typography><strong>Total Cost:</strong> ₹{selectedReport.totalCost?.toLocaleString() || '0'}</Typography>
+                <Typography><strong>Created:</strong> {new Date(selectedReport.createdAt).toLocaleString()}</Typography>
+              </Box>
+
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  Resources
+                </Typography>
+                {selectedReport.resourcesData.map((resource: any, index: number) => (
+                  <Paper key={index} sx={{ p: 2, mb: 2, bgcolor: '#f5f5f5' }}>
+                    <Typography><strong>Resource Name:</strong> {resource.resource}</Typography>
+                    <Typography><strong>Quantity:</strong> {resource.quantity}</Typography>
+                    <Typography><strong>Cost:</strong> ₹{resource.amount?.toLocaleString() || '0'}</Typography>
+                  </Paper>
+                ))}
+              </Box>
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                {selectedReport.pdfReport && (
+                  <Button
+                    variant="contained"
+                    startIcon={<FileDownloadIcon />}
+                    onClick={() => {
+                      // Create a link element and trigger download using base64 PDF data
+                      const link = document.createElement('a');
+                      link.href = selectedReport.pdfReport;
+                      link.download = `report-${selectedReport._id}.pdf`;
+                      link.click();
+                    }}
+                    sx={{
+                      bgcolor: '#0288d1',
+                      '&:hover': { bgcolor: '#01579b' },
+                    }}
+                  >
+                    Download PDF
+                  </Button>
+                )}
+                <Button
+                  variant="outlined"
+                  onClick={handleCloseModal}
+                  sx={{ ml: 'auto' }}
+                >
+                  Close
+                </Button>
+              </Box>
+            </>
+          )}
+        </Paper>
+      </Modal>
     </Box>
   );
 };

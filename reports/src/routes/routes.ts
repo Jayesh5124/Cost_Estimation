@@ -7,6 +7,7 @@ router.post('/save', async (req, res) => {
   try {
     const {
       clientEmail,
+      constructorEmail,
       builtupArea,
       totalCost,
       resourcesData,
@@ -15,6 +16,7 @@ router.post('/save', async (req, res) => {
 
     const report = new Report({
       clientEmail,
+      constructorEmail,
       builtupArea,
       totalCost,
       resourcesData,

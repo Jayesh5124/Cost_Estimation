@@ -10,13 +10,14 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 const PropertyDetailsForm: React.FC = () => {
   const location = useLocation();
   const { userEmail, userName } = useAuth();
+  const navigate = useNavigate();
 
   const [city, setCity] = useState('');
   const [stateName, setStateName] = useState('');
@@ -61,6 +62,10 @@ const PropertyDetailsForm: React.FC = () => {
     }
   };
 
+  const handleViewBids = () => {
+    navigate('/bid_property');
+  };
+
   return (
     <Box
       sx={{
@@ -82,6 +87,16 @@ const PropertyDetailsForm: React.FC = () => {
           width: '100%',
         }}
       >
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleViewBids}
+          fullWidth
+          sx={{ marginBottom: 3, fontWeight: 'bold' }}
+        >
+          View Bids
+        </Button>
+
         <Typography variant="h4" gutterBottom textAlign="center" fontWeight="bold" color="#333">
           Enter Property Details
         </Typography>

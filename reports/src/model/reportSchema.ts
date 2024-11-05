@@ -6,6 +6,11 @@ const ReportSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  constructorEmail: {
+    type: String,
+    required: true,
+    trim: true
+  },
   builtupArea: {
     type: Number,
     required: true

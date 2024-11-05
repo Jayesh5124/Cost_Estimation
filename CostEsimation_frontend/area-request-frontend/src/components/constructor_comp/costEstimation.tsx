@@ -16,6 +16,14 @@ interface ResourceData {
   id: number;
 }
 
+interface ExcavationData {
+  length: number;
+  width: number;
+  depth: number;
+  volumeCubicYards: number;
+  cost: number;
+}
+
 interface QuantityResponse {
   cementReq: number;
   cementCost: number;
@@ -38,12 +46,20 @@ interface SaveReportResponse {
 
 const CostByResourceAllocation: React.FC = () => {
   const location = useLocation();
-  const { estimationResult, total_cost, builtup_area, email, user_email } = location.state || { 
+  const { 
+    estimationResult, 
+    total_cost, 
+    builtup_area, 
+    email, 
+    user_email,
+    land_clearance_needed
+  } = location.state || { 
     estimationResult: 0, 
     total_cost: 0, 
     builtup_area: 0,
     email: '',
-    user_email: ''
+    user_email: '',
+    land_clearance_needed: false
   };
 
   const clientEmail = email || user_email || 'Not provided';
@@ -65,11 +81,21 @@ const CostByResourceAllocation: React.FC = () => {
   const [showReport, setShowReport] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [baseResourceData, setBaseResourceData] = useState<ResourceData[]>([]);
+  const [excavationData, setExcavationData] = useState<ExcavationData>({
+    length: Math.sqrt(builtup_area),
+    width: Math.sqrt(builtup_area),
+    depth: 3,
+    volumeCubicYards: 0,
+    cost: 0
+  });
 
   useEffect(() => {
     if (total_cost && estimationResult && !hasAttemptedFetch) {
       setHasAttemptedFetch(true);
       fetchQuantities();
+      if (land_clearance_needed) {
+        calculateExcavation();
+      }
     } else if (!total_cost || !estimationResult) {
       setResourcesData([]);
       console.warn('Missing required data:', { total_cost, estimationResult });
@@ -133,6 +159,32 @@ const CostByResourceAllocation: React.FC = () => {
       setResourcesData([]);
       setCostData([]);
     }
+  };
+
+  const calculateExcavation = () => {
+    if (!land_clearance_needed) return;
+
+    const volumeCubicFeet = excavationData.length * excavationData.width * excavationData.depth;
+    const volumeCubicYards = volumeCubicFeet / 27;
+    const costPerCubicYard = 150; // Average cost in rupees
+    const totalExcavationCost = volumeCubicYards * costPerCubicYard;
+
+    setExcavationData(prev => ({
+      ...prev,
+      volumeCubicYards,
+      cost: totalExcavationCost
+    }));
+
+    // Add excavation to resources
+    setResourcesData(prev => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        resource: 'Land Excavation',
+        quantity: `${volumeCubicYards.toFixed(2)} cubic yards`,
+        amount: totalExcavationCost
+      }
+    ]);
   };
 
   const handleQualityChange = (resourceId: number, quality: string) => {
@@ -215,6 +267,16 @@ const CostByResourceAllocation: React.FC = () => {
 
     setIsSaving(true);
     try {
+      // Get constructor email from session storage
+      const constructorEmail = sessionStorage.getItem('userEmail');
+      console.log(constructorEmail);
+      
+      
+      if (!constructorEmail) {
+        console.error('Constructor email not found in session storage');
+        throw new Error('Constructor email not found');
+      }
+
       // Generate PDF data
       const reportElement = document.getElementById('report-section');
       const chartElement = document.getElementById('cost-breakdown-chart');
@@ -240,14 +302,18 @@ const CostByResourceAllocation: React.FC = () => {
 
       const reportData = {
         clientEmail,
+        constructorEmail,
         builtupArea: builtup_area,
         totalCost: total_cost,
         resourcesData,
         pdfReport: pdfData,
         createdAt: new Date().toISOString()
       };
-
-      const response = await axios.post<SaveReportResponse>(
+      
+      console.log(reportData);
+      
+      // Save report
+      const saveReportResponse = await axios.post<SaveReportResponse>(
         'http://localhost:3006/api/reports/save',
         reportData,
         {
@@ -258,14 +324,41 @@ const CostByResourceAllocation: React.FC = () => {
         }
       );
 
-      if (response.data.success) {
-        alert('Report saved successfully!');
+      if (saveReportResponse.data.success) {
+        // Get constructor email from session storage
+        const constructorEmail = sessionStorage.getItem('userEmail');
+        
+        if (!constructorEmail) {
+          console.error('Constructor email not found in session storage');
+          throw new Error('Constructor email not found');
+        }
+
+        // Update area request
+        const updateResponse = await axios.put(
+          `http://localhost:3003/api/area-requests/${clientEmail}`,
+          {
+            isEstimated: true,
+            constructor_email: constructorEmail
+          },
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (updateResponse.data.success) {
+          alert('Report saved and area request updated successfully!');
+        } else {
+          throw new Error('Failed to update area request');
+        }
       } else {
-        throw new Error(response.data.message);
+        throw new Error(saveReportResponse.data.message);
       }
     } catch (error) {
-      console.error('Error saving report:', error);
-      alert('Failed to save report. Please try again.');
+      console.error('Error in save process:', error);
+      alert('Failed to complete the save process. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -285,6 +378,16 @@ const CostByResourceAllocation: React.FC = () => {
           <Typography>Client Email: {clientEmail}</Typography>
           <Typography>Built-up Area: {builtup_area} sq ft</Typography>
           <Typography>Total Estimated Cost: ₹{total_cost.toLocaleString()}</Typography>
+          {land_clearance_needed && (
+            <>
+              <Typography sx={{ mt: 1, fontWeight: 'bold' }}>Land Excavation Details:</Typography>
+              <Typography>Length: {excavationData.length.toFixed(2)} ft</Typography>
+              <Typography>Width: {excavationData.width.toFixed(2)} ft</Typography>
+              <Typography>Depth: {excavationData.depth} ft</Typography>
+              <Typography>Volume: {excavationData.volumeCubicYards.toFixed(2)} cubic yards</Typography>
+              <Typography>Excavation Cost: ₹{excavationData.cost.toLocaleString()}</Typography>
+            </>
+          )}
         </Box>
 
         <Typography variant="h6" sx={{ mb: 2 }}>Resource Breakdown:</Typography>
