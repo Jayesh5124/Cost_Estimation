@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination, Modal, Paper } from '@mui/material';
+import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination, Modal, Paper, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
@@ -13,7 +13,9 @@ interface Report {
   resourcesData: any[];
   pdfReport: string;
   createdAt: string;
+  mongoId: string;
   __v: number;
+  isStarted?: boolean;
 }
 
 interface PropertyBidProps {
@@ -29,6 +31,11 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
   const [isLoading, setIsLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState<string>('');
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -92,6 +99,51 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
         console.error('Error downloading PDF:', error);
       }
     }
+  };
+
+  const handleStartBuildingClick = (reportId: string) => {
+    setSelectedReportId(reportId);
+    setConfirmDialogOpen(true);
+  };
+
+  const handleConfirmStartBuilding = async () => {
+    setConfirmDialogOpen(false);
+    try {
+      const response = await axios.get(`http://localhost:3006/api/reports/${selectedReportId}`);
+      const fetchedMongoId = response.data.mongoId;
+
+      const response2 = await axios.put(`http://localhost:3003/api/area-requests/${fetchedMongoId}`);
+      
+      if (response2.data.success) {
+        setReports(prevReports => 
+          prevReports.map(report => 
+            report._id === selectedReportId 
+              ? { ...report, isStarted: true }
+              : report
+          )
+        );
+        
+        setSnackbarMessage('Successfully notified constructor!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+        onEstimate(selectedReportId);
+      } else {
+        setSnackbarMessage('Failed to notify constructor');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage('Error notifying constructor');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   return (
@@ -207,21 +259,22 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
           <Box sx={{ textAlign: 'right', minWidth: '150px' }}>
             <Button
               variant="contained"
-              onClick={() => onEstimate(report._id)}
+              onClick={() => handleStartBuildingClick(report._id)}
+              disabled={report.isStarted}
               sx={{
                 px: 3,
                 py: 1.5,
                 fontWeight: 'bold',
                 borderRadius: '8px',
-                backgroundColor: 'black',
+                backgroundColor: report.isStarted ? 'gray' : 'black',
                 boxShadow: '0px 6px 16px rgba(255, 112, 67, 0.4)',
                 '&:hover': {
-                  backgroundColor: 'gray',
+                  backgroundColor: report.isStarted ? 'gray' : 'darkgray',
                   boxShadow: '0px 8px 20px rgba(230, 74, 25, 0.6)',
                 },
               }}
             >
-              Start Building
+              {report.isStarted ? 'Constructor Notified' : 'Start Building'}
             </Button>
           </Box>
         </Card>
@@ -325,6 +378,37 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
           )}
         </Paper>
       </Modal>
+
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Start Building</DialogTitle>
+        <DialogContent>
+          Are you sure you want to start the building process? This will notify the constructor.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleConfirmStartBuilding} variant="contained" color="primary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

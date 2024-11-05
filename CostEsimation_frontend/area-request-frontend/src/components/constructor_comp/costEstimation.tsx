@@ -1,6 +1,6 @@
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Button, RadioGroup, FormControlLabel, Radio
+  TableHead, TableRow, Paper, Button, RadioGroup, FormControlLabel, Radio, Snackbar, Alert
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import CostBreakdownChart from '../user_components/breakDownCharts';
@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { CurrencyExchange } from '@mui/icons-material';
 
 interface ResourceData {
   resource: string;
@@ -44,6 +45,11 @@ interface SaveReportResponse {
   message: string;
 }
 
+interface AreaRequestResponse {
+  _id: string;  // MongoDB ID
+  // ... other fields if needed
+}
+
 const CostByResourceAllocation: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -53,25 +59,26 @@ const CostByResourceAllocation: React.FC = () => {
     builtup_area, 
     email, 
     user_email,
-    land_clearance_needed
+    land_clearance_needed,
+    mongoId: locationMongoId,
+    id
   } = location.state || { 
     estimationResult: 0, 
     total_cost: 0, 
     builtup_area: 0,
     email: '',
     user_email: '',
-    land_clearance_needed: false
+    land_clearance_needed: false,
+    mongoId: '',
+    id: ''
   };
 
   const clientEmail = email || user_email || 'Not provided';
 
-  console.log('Component rendered with:', {
-    estimationResult,
-    total_cost,
-    builtup_area,
-    email,
-    user_email,
-    locationState: location.state
+  console.log('MongoDB IDs:', {
+    locationMongoId,
+    id,
+    mongoIdFromState: location.state?.mongoId
   });
 
   const [resourcesData, setResourcesData] = useState<ResourceData[]>([]);
@@ -89,6 +96,13 @@ const CostByResourceAllocation: React.FC = () => {
     volumeCubicYards: 0,
     cost: 0
   });
+  const [mongoId, setMongoId] = useState<string>('');
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error'
+  });
+  const [currentTotalCost, setCurrentTotalCost] = useState<number>(total_cost);
 
   useEffect(() => {
     if (total_cost && estimationResult && !hasAttemptedFetch) {
@@ -102,6 +116,39 @@ const CostByResourceAllocation: React.FC = () => {
       console.warn('Missing required data:', { total_cost, estimationResult });
     }
   }, [total_cost, estimationResult, hasAttemptedFetch]);
+
+  useEffect(() => {
+    const fetchMongoId = async () => {
+      try {
+        if (locationMongoId) {
+          console.log('Using mongoId from location state:', locationMongoId);
+          setMongoId(locationMongoId);
+          return;
+        }
+
+        if (id) {
+          console.log('Using id as mongoId:', id);
+          setMongoId(id);
+          return;
+        }
+
+        if (clientEmail && clientEmail !== 'Not provided') {
+          console.log('Fetching mongoId by email:', clientEmail);
+          const response = await axios.get<AreaRequestResponse>(
+            `http://localhost:3003/api/area-requests/by-email/${clientEmail}`
+          );
+          if (response.data && response.data._id) {
+            console.log('Fetched mongoId:', response.data._id);
+            setMongoId(response.data._id);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching mongoId:', error);
+      }
+    };
+
+    fetchMongoId();
+  }, [clientEmail, locationMongoId, id]);
 
   const fetchQuantities = async () => {
     try {
@@ -221,6 +268,9 @@ const CostByResourceAllocation: React.FC = () => {
         };
       });
       
+      const newTotalCost = calculatedCosts.reduce((sum, resource) => sum + resource.amount, 0);
+      setCurrentTotalCost(newTotalCost);
+      
       setResourcesData(calculatedCosts);
       setCostData(calculatedCosts.map(resource => ({
         resource: resource.resource,
@@ -268,20 +318,23 @@ const CostByResourceAllocation: React.FC = () => {
 
     setIsSaving(true);
     try {
-      // Get constructor email from session storage
       const constructorEmail = sessionStorage.getItem('userEmail');
-      console.log(constructorEmail);
-      
       
       if (!constructorEmail) {
-        console.error('Constructor email not found in session storage');
         throw new Error('Constructor email not found');
+      }
+
+      const currentMongoId = mongoId || locationMongoId || id;
+      if (!currentMongoId) {
+        throw new Error('MongoDB ID is missing');
       }
 
       // Generate PDF data
       const reportElement = document.getElementById('report-section');
       const chartElement = document.getElementById('cost-breakdown-chart');
-      if (!reportElement || !chartElement) return;
+      if (!reportElement || !chartElement) {
+        throw new Error('Required elements not found');
+      }
 
       const reportCanvas = await html2canvas(reportElement);
       const chartCanvas = await html2canvas(chartElement);
@@ -298,70 +351,54 @@ const CostByResourceAllocation: React.FC = () => {
       const chartHeight = (chartCanvas.height * pageWidth) / chartCanvas.width;
       pdf.addImage(chartImgData, 'PNG', 0, 0, pageWidth, chartHeight);
       
-      // Convert PDF to base64
       const pdfData = pdf.output('datauristring');
+      console.log("CurrentMongoId",currentMongoId);
+      
 
       const reportData = {
         clientEmail,
         constructorEmail,
         builtupArea: builtup_area,
-        totalCost: total_cost,
+        totalCost: currentTotalCost,
         resourcesData,
         pdfReport: pdfData,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        mongoId: currentMongoId
       };
       
-      console.log(reportData);
+      console.log('Sending report data:', {
+        clientEmail,
+        constructorEmail,
+        mongoId: currentMongoId
+      });
       
-      // Save report
       const saveReportResponse = await axios.post<SaveReportResponse>(
         'http://localhost:3006/api/reports/save',
         reportData,
         {
-          withCredentials: true,
           headers: {
             'Content-Type': 'application/json'
           }
         }
       );
 
-      if (saveReportResponse.data.success) {
-        // Get constructor email from session storage
-        const constructorEmail = sessionStorage.getItem('userEmail');
-        
-        if (!constructorEmail) {
-          console.error('Constructor email not found in session storage');
-          throw new Error('Constructor email not found');
-        }
-
-        // Update area request
-        const updateResponse = await axios.put(
-          `http://localhost:3003/api/area-requests/${clientEmail}`,
-          {
-            isEstimated: true,
-            constructor_email: constructorEmail
-          },
-          {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-
-        if (updateResponse.data.success) {
-          alert('Report saved and area request updated successfully!');
+      if(saveReportResponse.data.success){
+        setSnackbar({
+          open: true,
+          message: 'Report saved successfully!',
+          severity: 'success'
+        });
+        setTimeout(() => {
           navigate('/thanku_cons');
-
-        } else {
-          throw new Error('Failed to update area request');
-        }
-      } else {
-        throw new Error(saveReportResponse.data.message);
+        }, 2000);
       }
     } catch (error) {
       console.error('Error in save process:', error);
-      alert('Failed to complete the save process. Please try again.');
+      setSnackbar({
+        open: true,
+        message: `Failed to save report: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        severity: 'error'
+      });
     } finally {
       setIsSaving(false);
     }
@@ -380,7 +417,7 @@ const CostByResourceAllocation: React.FC = () => {
         <Box sx={{ mb: 3 }}>
           <Typography>Client Email: {clientEmail}</Typography>
           <Typography>Built-up Area: {builtup_area} sq ft</Typography>
-          <Typography>Total Estimated Cost: ₹{total_cost.toLocaleString()}</Typography>
+          <Typography>Total Estimated Cost: ₹{currentTotalCost.toLocaleString()}</Typography>
           {land_clearance_needed && (
             <>
               <Typography sx={{ mt: 1, fontWeight: 'bold' }}>Land Excavation Details:</Typography>
@@ -475,6 +512,38 @@ const CostByResourceAllocation: React.FC = () => {
     </Box>
   );
 
+  const totalCostDisplay = (
+    <Box
+      sx={{
+        backgroundColor: '#ffffff',
+        padding: 3,
+        borderRadius: '8px',
+        marginBottom: 3,
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 1
+      }}
+    >
+      <Typography variant="h6" color="text.secondary">
+        Total Estimated Cost
+      </Typography>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 'bold',
+          color: '#0d47a1',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1
+        }}
+      >
+        ₹{isEstimateCalculated ? currentTotalCost.toLocaleString() : total_cost.toLocaleString()}
+      </Typography>
+    </Box>
+  );
+
   if (!total_cost || !estimationResult) {
     return (
       <Box sx={{ padding: 2, textAlign: 'center' }}>
@@ -501,35 +570,7 @@ const CostByResourceAllocation: React.FC = () => {
         Cost By Resource Allocation
       </Typography>
 
-      <Box
-        sx={{
-          backgroundColor: '#ffffff',
-          padding: 3,
-          borderRadius: '8px',
-          marginBottom: 3,
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 1
-        }}
-      >
-        <Typography variant="h6" color="text.secondary">
-          Total Estimated Cost
-        </Typography>
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 'bold',
-            color: '#0d47a1',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1
-          }}
-        >
-          ₹{total_cost.toLocaleString()}
-        </Typography>
-      </Box>
+      {totalCostDisplay}
 
       {saveReportButton}
 
@@ -612,6 +653,21 @@ const CostByResourceAllocation: React.FC = () => {
           <CostBreakdownChart data={costData} />
         </Box>
       )}
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

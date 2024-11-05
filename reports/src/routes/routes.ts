@@ -11,7 +11,8 @@ router.post('/save', async (req, res) => {
       builtupArea,
       totalCost,
       resourcesData,
-      pdfReport
+      pdfReport,
+      mongoId
     } = req.body;
 
     const report = new Report({
@@ -20,7 +21,8 @@ router.post('/save', async (req, res) => {
       builtupArea,
       totalCost,
       resourcesData,
-      pdfReport
+      pdfReport,
+      mongoId
     });
 
     await report.save();
@@ -54,16 +56,26 @@ router.get('/all', async (req, res) => {
   }
 });
 
-router.get('/email/:clientEmail', async (req: Request, res: Response): Promise<any> => {
+router.get('/email/:constructorEmail', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { clientEmail } = req.params;
-    const reports = await Report.find({ clientEmail });
+    const { constructorEmail } = req.params;
     
-    if (reports.length === 0) {
-      return res.status(404).json({
+    if (!constructorEmail || typeof constructorEmail !== 'string') {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid email parameter'
+      });
+      return;
+    }
+
+    const reports = await Report.find({ constructorEmail }).lean();
+    
+    if (!reports || reports.length === 0) {
+      res.status(404).json({
         success: false,
         message: 'No reports found for this email'
       });
+      return;
     }
 
     res.json({
@@ -71,12 +83,23 @@ router.get('/email/:clientEmail', async (req: Request, res: Response): Promise<a
       data: reports
     });
   } catch (error) {
-    console.error('Error fetching reports by email:', error);
+    console.error('Error fetching reports by email:', {
+      constructorEmail: req.params.constructorEmail,
+      error: error instanceof Error ? error.message : error
+    });
+    
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch reports'
+      message: 'Failed to fetch reports',
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
+});
+
+router.get('/:reportId', async (req: Request, res: Response) => {
+  const { reportId } = req.params;
+  const report = await Report.findById(reportId);
+  res.json(report);
 });
 
 export default router;

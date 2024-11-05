@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination, Tooltip } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination, Tooltip, Badge, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText } from '@mui/material';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -27,6 +27,46 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const propertiesPerPage = 5;
   const navigate = useNavigate();
+  const [notifications, setNotifications] = useState<Property[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    const checkBuildingRequests = async () => {
+      try {
+        const constructorEmail = sessionStorage.getItem('userEmail');
+        
+        // Fetch all reports for the constructor
+        const response = await axios.get(`http://localhost:3006/api/reports/email/${constructorEmail}`);
+        const reports = response.data.data;
+        
+        // For each report, check if there's a corresponding property with isStartBuild
+        for (const report of reports) {
+          try {
+            const areaRequestResponse = await axios.get(`http://localhost:3003/api/area-requests/${report.mongoId}`);
+            
+            if (areaRequestResponse.data && areaRequestResponse.data.isStartBuild) {
+              // Find matching property from properties array
+              const matchingProperty = properties.find(p => p._id === report.mongoId);
+              if (matchingProperty) {
+                setNotifications(prev => {
+                  if (!prev.some(p => p._id === matchingProperty._id)) {
+                    return [...prev, matchingProperty];
+                  }
+                  return prev;
+                });
+              }
+            }
+          } catch (error) {
+            console.error(`Error checking area request for mongoId ${report.mongoId}:`, error);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching building requests:', error);
+      }
+    };
+
+    checkBuildingRequests();
+  }, [properties]);
 
   const filteredProperties = properties.filter((property) => {
     const builtUpAreaMatch = property.builtup_area.toString().includes(searchTerm);
@@ -68,19 +108,24 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
       const response = await axios.post(`http://localhost:3005/api/cost-estimates/calculate/${property.builtup_area}/${type}`, {
         builtup_area: property.builtup_area,
         type: type,
+        mongoId: property._id
       });
-      console.log(property.builtup_area);
+      
+      console.log(property._id);
+      
       
       navigate('/cost_estimation', {
         state: {
           id: property._id,
+          mongoId: property._id,
           user_email: property.user_email,
+          email: property.user_email,
           estimationResult: response.data,
           total_cost: response.data,
           builtup_area: property.builtup_area,
         },
       });
- 
+
       onEstimate(property._id);
     } catch (error) {
       console.error('Error calculating estimation:', error);
@@ -92,26 +137,31 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
       state: { id },
     });
   };
-  const handleIconClick = (property: Property) => {
-    setSelectedProperty(property); // Open modal with property details
+  const handleIconClick = () => {
+    setIsModalOpen(true);
+  };
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
   return (
     <Box sx={{ padding: 2, background: 'linear-gradient(to right, #f8f9fa, #e0f7fa)', minHeight: '100vh' }}>
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
-      {properties.some((property) => property.isStartBuild) && (
-          <Tooltip title="Construction Started">
-            <Icon
-              sx={{
-                fontSize: 30,
-                color: '#1976d2',
-                marginRight: 1,
-                cursor: 'pointer',
-              }}
-              onClick={() => handleIconClick(properties.find((property) => property.isStartBuild)!)}
-            >
-              <MessageIcon fontSize="inherit" />
-            </Icon>
-          </Tooltip>
+        {notifications.length > 0 && (
+          <Badge badgeContent={notifications.length} color="error">
+            <Tooltip title="Construction Requests">
+              <Icon
+                sx={{
+                  fontSize: 30,
+                  color: '#1976d2',
+                  marginRight: 1,
+                  cursor: 'pointer',
+                }}
+                onClick={handleIconClick}
+              >
+                <MessageIcon fontSize="inherit" />
+              </Icon>
+            </Tooltip>
+          </Badge>
         )}
         <TextField
           label="Search by Name or Built-Up Area"
@@ -143,6 +193,49 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
           />
         </Box>
       </Box>
+
+      <Dialog open={isModalOpen} onClose={handleCloseModal} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ backgroundColor: '#f5f5f5', fontWeight: 'bold' }}>
+          Construction Requests
+        </DialogTitle>
+        <DialogContent>
+          <List>
+            {notifications.map((property) => (
+              <ListItem 
+                key={property._id}
+                sx={{
+                  mb: 2,
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '8px',
+                  '&:hover': { backgroundColor: '#f5f5f5' }
+                }}
+              >
+                <ListItemText
+                  primary={
+                    <Typography variant="h6" sx={{ color: '#1976d2' }}>
+                      {property.property_name || 'Unnamed Property'}
+                    </Typography>
+                  }
+                  secondary={
+                    <Box>
+                      <Typography variant="body2">Owner: {property.user_name}</Typography>
+                      <Typography variant="body2">Location: {property.city}, {property.state}</Typography>
+                      <Typography variant="body2">Built-up Area: {property.builtup_area} sq ft</Typography>
+                    </Box>
+                  }
+                />
+                <Button 
+                  variant="contained"
+                  onClick={() => handleViewDetails(property._id)}
+                  sx={{ ml: 2 }}
+                >
+                  View Details
+                </Button>
+              </ListItem>
+            ))}
+          </List>
+        </DialogContent>
+      </Dialog>
 
       {paginatedProperties.map((property) => (
         <Card

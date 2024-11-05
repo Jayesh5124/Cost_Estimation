@@ -81,18 +81,15 @@ export const getAreaRequestById = async (req: Request, res: Response) => {
     }
 };
 
+
+
 // Update area request
 export const updateAreaRequest = async (req: Request, res: Response) => {
     try {
-        const userEmail = req.params.id; // This will be the client email
-        const { isEstimated, constructor_email } = req.body;
-
-        const updatedRequest = await AreaRequestModel.findOneAndUpdate(
-            { user_email: userEmail },
-            { 
-                isEstimated: isEstimated,
-                constructor_email: constructor_email 
-            },
+        const id = req.params.id;
+        const updatedRequest = await AreaRequestModel.findByIdAndUpdate(
+            id,
+            { isStartBuild: true },
             { new: true }
         );
 
