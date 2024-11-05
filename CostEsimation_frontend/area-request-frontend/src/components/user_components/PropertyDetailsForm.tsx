@@ -56,6 +56,7 @@ const PropertyDetailsForm: React.FC = () => {
     try {
       await axios.post('http://localhost:3003/api/area-requests', areaRequest);
       alert('Property details submitted successfully!');
+      navigate('/user_properties')
     } catch (error) {
       console.error('Error submitting property details:', error);
       alert('Failed to submit property details. Please try again.');
@@ -64,6 +65,10 @@ const PropertyDetailsForm: React.FC = () => {
 
   const handleViewBids = () => {
     navigate('/bid_property');
+  };
+
+  const handleViewProperties = () => {
+    navigate('/user_properties');
   };
 
   return (
@@ -87,17 +92,54 @@ const PropertyDetailsForm: React.FC = () => {
           width: '100%',
         }}
       >
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleViewBids}
-          fullWidth
-          sx={{ marginBottom: 3, fontWeight: 'bold' }}
-        >
-          View Bids
-        </Button>
+       <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Button
+              variant="contained"
+              onClick={handleViewBids}
+              fullWidth
+              sx={{
+                padding: '10px 20px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                borderRadius: '8px',
+                backgroundColor: '#ff7043',
+                color: '#fff',
+                boxShadow: '0px 6px 16px rgba(255, 112, 67, 0.3)',
+                '&:hover': {
+                  backgroundColor: '#d84315',
+                  boxShadow: '0px 8px 20px rgba(255, 112, 67, 0.5)',
+                },
+              }}
+            >
+              View Bids
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button
+              variant="contained"
+              onClick={handleViewProperties}
+              fullWidth
+              sx={{
+                padding: '10px 20px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                borderRadius: '8px',
+                backgroundColor: '#ff7043',
+                color: '#fff',
+                boxShadow: '0px 6px 16px rgba(255, 112, 67, 0.3)',
+                '&:hover': {
+                  backgroundColor: '#d84315',
+                  boxShadow: '0px 8px 20px rgba(255, 112, 67, 0.5)',
+                },
+              }}
+            >
+              View Properties
+            </Button>
+          </Grid>
+        </Grid>
 
-        <Typography variant="h4" gutterBottom textAlign="center" fontWeight="bold" color="#333">
+        <Typography variant="h4" gutterBottom textAlign="center" fontWeight="bold" color="#333" sx={{ marginTop: 4 }}>
           Enter Property Details
         </Typography>
 
@@ -280,7 +322,7 @@ const PropertyDetailsForm: React.FC = () => {
 
             {/* Post Property Button */}
             <Grid item xs={12}>
-              <Button
+              <Button 
                 variant="contained"
                 color="primary"
                 type="submit"

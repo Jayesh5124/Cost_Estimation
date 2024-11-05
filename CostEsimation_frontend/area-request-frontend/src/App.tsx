@@ -21,6 +21,7 @@ import PrivateRoute from './components/context/privateRount';
 import PropertyBid from './components/user_components/BidProperty';
 import ThankYouPage from './components/user_components/ThankYouPage';
 import ThankuPageCons from './components/constructor_comp/ThankuPageCons';
+import ViewProperty from './components/user_components/viewProperty';
 
 const App: React.FC = () => {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -64,8 +65,9 @@ const App: React.FC = () => {
               onEstimate={(id) => console.log('Estimate:', id)}
             />
           </PrivateRoute>} />
-        <Route path="/thanku_user" element={<ThankYouPage />} />
-        <Route path="/thanku_cons" element={<ThankuPageCons />} />
+        <Route path="/thanku_user" element={<PrivateRoute><ThankYouPage /></PrivateRoute>} />
+        <Route path="/thanku_cons" element={<PrivateRoute><ThankuPageCons /></PrivateRoute>} />
+        <Route path="/user_properties" element={<PrivateRoute><ViewProperty /></PrivateRoute>} />
         </Routes>
       </div>
     </AuthProvider>

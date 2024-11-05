@@ -4,7 +4,7 @@ import {
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import CostBreakdownChart from '../user_components/breakDownCharts';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -46,6 +46,7 @@ interface SaveReportResponse {
 
 const CostByResourceAllocation: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { 
     estimationResult, 
     total_cost, 
@@ -350,6 +351,8 @@ const CostByResourceAllocation: React.FC = () => {
 
         if (updateResponse.data.success) {
           alert('Report saved and area request updated successfully!');
+          navigate('/thanku_cons');
+
         } else {
           throw new Error('Failed to update area request');
         }
