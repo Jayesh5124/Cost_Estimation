@@ -15,7 +15,7 @@ const router = express.Router();
 router.post('/area-requests', createAreaRequest as any);
 router.get('/area-requests', getAllAreaRequests);
 router.get('/area-requests/:id', getAreaRequestById);
-router.put('/area-requests/:id', updateAreaRequest);
+router.put('/area-requests/:id', updateAreaRequest as any);
 router.delete('/area-requests/:id', deleteAreaRequest);
 
 export default router;
