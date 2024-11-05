@@ -182,6 +182,8 @@ import { AuthProvider, useAuth } from './components/context/AuthContext';
 import RegistrationPage from './components/login_components/Resgistration';
 import PrivateRoute from './components/context/privateRount';
 import PropertyBid from './components/user_components/BidProperty';
+import ThankYouPage from './components/user_components/ThankYouPage';
+import ThankuPageCons from './components/constructor_comp/ThankuPageCons';
 
  // Fixed typo in import
 
@@ -233,6 +235,8 @@ const App: React.FC = () => {
             }}
           />
         } />
+        <Route path="/thanku_user" element={<ThankYouPage />} />
+        <Route path="/thanku_cons" element={<ThankuPageCons />} />
         </Routes>
       </div>
     </AuthProvider>
