@@ -1,6 +1,6 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';// Adjust this path as necessary
-import { Container, Paper, Typography } from '@mui/material';
+import { useParams, useNavigate } from 'react-router-dom';// Adjust this path as necessary
+import { Container, Paper, Typography, Button } from '@mui/material';
 import { Property } from '../types/Property';
 
 // Define styles for the component
@@ -21,6 +21,21 @@ const styles = {
         maxWidth: '800px',
         width: '100%',
         background: 'rgba(255, 255, 255, 0.95)',
+    },
+    titleContainer: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '24px',
+        borderBottom: '2px solid #e0e0e0',
+        paddingBottom: '16px',
+    },
+    backButton: {
+        backgroundColor: '#1976d2',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#1565c0',
+        },
     },
     title: {
         marginBottom: '24px',
@@ -48,6 +63,7 @@ const styles = {
 
 const PropertyDetail: React.FC<{ properties: Property[] }> = ({ properties }) => {
     const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
 
     const property = properties.find(prop => prop._id === id);
 
@@ -65,9 +81,18 @@ const PropertyDetail: React.FC<{ properties: Property[] }> = ({ properties }) =>
     return (
         <Container style={styles.container}>
             <Paper elevation={3} style={styles.paper}>
-                <Typography variant="h4" style={styles.title}>
-                    {property.property_name}
-                </Typography>
+                <div style={styles.titleContainer}>
+                    <Typography variant="h4" style={{ ...styles.title, marginBottom: 0, borderBottom: 'none' }}>
+                        {property.property_name}
+                    </Typography>
+                    <Button 
+                        variant="contained" 
+                        style={styles.backButton}
+                        onClick={() => navigate('/list_property')}
+                    >
+                        Back to List
+                    </Button>
+                </div>
                 <Typography variant="body1" style={styles.detailText}>
                     <span style={styles.label}>Owner</span>
                     <span style={styles.value}>{property.user_name}</span>

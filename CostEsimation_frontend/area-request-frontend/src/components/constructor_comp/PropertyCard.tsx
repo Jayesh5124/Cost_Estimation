@@ -40,13 +40,19 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
         // Fetch all reports for the constructor
         const response = await axios.get(`http://localhost:3006/api/reports/email/${constructorEmail}`);
         const reports = response.data.data;
+        console.log("reports", reports);
+        
         
         // For each report, check if there's a corresponding property with isStartBuild
         for (const report of reports) {
           try {
             const areaRequestResponse = await axios.get(`http://localhost:3003/api/area-requests/${report.mongoId}`);
+            console.log("constructor email", constructorEmail);
+            console.log("areaRequestResponse", areaRequestResponse.data);
             
-            if (areaRequestResponse.data && areaRequestResponse.data.isStartBuild) {
+            if (areaRequestResponse.data && 
+                areaRequestResponse.data.isStartBuild && 
+                report.constructorEmail === constructorEmail) {
               // Find matching property from properties array
               const matchingProperty = properties.find(p => p._id === report.mongoId);
               if (matchingProperty) {
@@ -71,6 +77,12 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
   }, [properties]);
 
   const filteredProperties = properties.filter((property) => {
+    // First check if isStartBuild is false (or undefined)
+    if (property.isStartBuild) {
+      return false;
+    }
+    
+    // Then apply the existing search filters
     const builtUpAreaMatch = property.builtup_area.toString().includes(searchTerm);
     const nameMatch = property.property_name?.toLowerCase().includes(searchTerm.toLowerCase() || '');
     return nameMatch || builtUpAreaMatch;

@@ -6,7 +6,7 @@ const ThankuPageCons: React.FC = () => {
   const navigate = useNavigate();
 
   const handleExploreMore = () => {
-    navigate('/'); // Redirect to home page
+    navigate('/list_property'); // Redirect to home page
   };
 
   return (
@@ -60,7 +60,7 @@ const ThankuPageCons: React.FC = () => {
           },
         }}
       >
-        Explore More
+        Estimate More Properties
       </Button>
     </Box>
   );

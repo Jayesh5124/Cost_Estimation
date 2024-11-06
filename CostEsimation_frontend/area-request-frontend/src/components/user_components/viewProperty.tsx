@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Paper, Typography } from '@mui/material';
+import { Container, Paper, Typography, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { Property } from '../types/Property';
 import axios from 'axios';
 
@@ -23,12 +24,25 @@ const styles = {
     detailText: {
         marginBottom: '10px',
     },
+    buttonContainer: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        marginBottom: '20px',
+    },
+    button: {
+        backgroundColor: '#00796b',
+        color: 'white',
+        '&:hover': {
+            backgroundColor: '#005a4f',
+        },
+    },
 };
 
 const ViewProperty: React.FC = () => {
     const [properties, setProperties] = useState<Property[]>([]);
     const [userProperties, setUserProperties] = useState<Property[]>([]);
     const userEmail = sessionStorage.getItem('userEmail');
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Fetch all properties from the API
@@ -54,6 +68,15 @@ const ViewProperty: React.FC = () => {
 
     return (
         <Container style={styles.container}>
+            <div style={styles.buttonContainer}>
+                <Button 
+                    variant="contained" 
+                    style={styles.button}
+                    onClick={() => navigate('/property_details')}
+                >
+                    Back to Area Form
+                </Button>
+            </div>
             {userProperties.length > 0 ? (
                 userProperties.map(property => (
                     <Paper elevation={3} style={styles.paper} key={property._id}>

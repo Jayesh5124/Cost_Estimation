@@ -22,6 +22,9 @@ import PropertyBid from './components/user_components/BidProperty';
 import ThankYouPage from './components/user_components/ThankYouPage';
 import ThankuPageCons from './components/constructor_comp/ThankuPageCons';
 import ViewProperty from './components/user_components/viewProperty';
+import AdminDashboard from './components/admin_components/AdminDashboard';
+import { Container } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const App: React.FC = () => {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -68,6 +71,9 @@ const App: React.FC = () => {
         <Route path="/thanku_user" element={<PrivateRoute><ThankYouPage /></PrivateRoute>} />
         <Route path="/thanku_cons" element={<PrivateRoute><ThankuPageCons /></PrivateRoute>} />
         <Route path="/user_properties" element={<PrivateRoute><ViewProperty /></PrivateRoute>} />
+        <Route path="/admin" element={
+            <AdminDashboard />
+        } />
         </Routes>
       </div>
     </AuthProvider>

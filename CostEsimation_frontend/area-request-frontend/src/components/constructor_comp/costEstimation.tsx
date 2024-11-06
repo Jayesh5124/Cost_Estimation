@@ -1,6 +1,6 @@
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Button, RadioGroup, FormControlLabel, Radio, Snackbar, Alert
+  TableHead, TableRow, Paper, Button, RadioGroup, FormControlLabel, Radio, Snackbar, Alert, Container, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import CostBreakdownChart from '../user_components/breakDownCharts';
@@ -103,6 +103,7 @@ const CostByResourceAllocation: React.FC = () => {
     severity: 'success' as 'success' | 'error'
   });
   const [currentTotalCost, setCurrentTotalCost] = useState<number>(total_cost);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
   useEffect(() => {
     if (total_cost && estimationResult && !hasAttemptedFetch) {
@@ -481,11 +482,91 @@ const CostByResourceAllocation: React.FC = () => {
     );
   };
 
+  const totalCostDisplay = (
+    <Box
+      sx={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+        backgroundColor: '#ffffff',
+        padding: 2,
+        borderRadius: '8px',
+        marginBottom: 3,
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 1,
+        width: '100%',
+        maxWidth: '600px',
+        margin: '0 auto'
+      }}
+    >
+      <Typography variant="h6" color="text.secondary">
+        Total Estimated Cost
+      </Typography>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 'bold',
+          color: '#0d47a1',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1
+        }}
+      >
+        <CurrencyExchange sx={{ fontSize: 32 }} />
+        ₹{isEstimateCalculated ? currentTotalCost.toLocaleString() : total_cost.toLocaleString()}
+      </Typography>
+    </Box>
+  );
+
+  const tableStyles = {
+    maxWidth: '900px',
+    margin: '0 auto',
+    marginTop: 4,
+    '& .MuiTable-root': {
+      minWidth: 'unset',
+    },
+    '& .MuiTableCell-root': {
+      padding: '12px 16px',
+    }
+  };
+
+  const confirmationDialog = (
+    <Dialog
+      open={openConfirmDialog}
+      onClose={() => setOpenConfirmDialog(false)}
+    >
+      <DialogTitle>Confirm Report Submission</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          This report will be sent to the user ({clientEmail}). Are you sure you want to proceed?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setOpenConfirmDialog(false)} color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={() => {
+            setOpenConfirmDialog(false);
+            handleSaveReport();
+          }}
+          color="primary"
+          variant="contained"
+        >
+          Confirm Send
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
   const saveReportButton = (
     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}>
       <Button
         variant="contained"
-        onClick={handleSaveReport}
+        onClick={() => setOpenConfirmDialog(true)}
         disabled={!showReport || !isEstimateCalculated || isSaving}
         sx={{
           backgroundColor: '#2e7d32',
@@ -507,40 +588,8 @@ const CostByResourceAllocation: React.FC = () => {
           transition: 'all 0.2s ease-in-out'
         }}
       >
-        {isSaving ? 'Saving...' : 'Save Report to Database'}
+        {isSaving ? 'Sending...' : 'Send Report'}
       </Button>
-    </Box>
-  );
-
-  const totalCostDisplay = (
-    <Box
-      sx={{
-        backgroundColor: '#ffffff',
-        padding: 3,
-        borderRadius: '8px',
-        marginBottom: 3,
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 1
-      }}
-    >
-      <Typography variant="h6" color="text.secondary">
-        Total Estimated Cost
-      </Typography>
-      <Typography
-        variant="h4"
-        sx={{
-          fontWeight: 'bold',
-          color: '#0d47a1',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
-        }}
-      >
-        ₹{isEstimateCalculated ? currentTotalCost.toLocaleString() : total_cost.toLocaleString()}
-      </Typography>
     </Box>
   );
 
@@ -555,119 +604,111 @@ const CostByResourceAllocation: React.FC = () => {
   }
 
   return (
-    <Box sx={{ padding: 2, background: '#f0f0f0', minHeight: '100vh' }}>
-      <Typography
-        variant="h3"
-        sx={{
-          fontWeight: 'bold',
-          color: '#263238',
-          textAlign: 'center',
-          marginBottom: 4,
-          textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
-          fontFamily: 'Arial, sans-serif',
-        }}
-      >
-        Cost By Resource Allocation
-      </Typography>
-
-      {totalCostDisplay}
-
-      {saveReportButton}
-
-      <TableContainer component={Paper} sx={{ boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)', borderRadius: '8px' }}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1' }}>Resource</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1' }}>Quantity</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1', textAlign: 'center' }}>Quality</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1' }}>Amount</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {resourcesData.map((row) => (
-              <TableRow key={row.id} sx={{ '&:nth-of-type(odd)': { backgroundColor: '#f5f5f5' } }}>
-                <TableCell component="th" scope="row" sx={{ color: '#45591c', borderBottom: '1px solid #ccc' }}>
-                  {row.resource}
-                </TableCell>
-                <TableCell sx={{ color: '#45591c', borderBottom: '1px solid #ccc' }}>{row.quantity}</TableCell>
-                <TableCell sx={{ color: '#45591c', borderBottom: '1px solid #ccc', minWidth: '300px' }}>
-                  <RadioGroup
-                    value={selectedQuality[row.id] || ''}
-                    onChange={(event) => handleQualityChange(row.id, event.target.value)}
-                    row
-                    sx={{
-                      justifyContent: 'space-between',
-                      '& .MuiFormControlLabel-root': {
-                        margin: '0 8px'
-                      }
-                    }}
-                  >
-                    <FormControlLabel value="Basic" control={<Radio />} label="Basic" />
-                    <FormControlLabel value="Moderate" control={<Radio />} label="Moderate" />
-                    <FormControlLabel value="Premium" control={<Radio />} label="Premium" />
-                  </RadioGroup>
-                </TableCell>
-                <TableCell sx={{ color: '#45591c', borderBottom: '1px solid #ccc' }}>
-                  ₹{row.amount.toLocaleString()}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Button
-          variant="contained"
-          onClick={handleCalculateEstimate}
+    <Box sx={{ 
+      padding: 2, 
+      background: 'linear-gradient(to bottom, #f0f0f0, #e0e0e0)',
+      minHeight: '100vh'
+    }}>
+      <Container maxWidth="lg">
+        <Typography
+          variant="h3"
           sx={{
-            backgroundColor: '#9c27b0',
-            color: 'white',
-            padding: '12px 32px',
-            fontSize: '1.1rem',
             fontWeight: 'bold',
-            textTransform: 'none',
-            '&:hover': {
-              backgroundColor: '#7b1fa2',
-              transform: 'translateY(-2px)',
-              boxShadow: '0 6px 12px rgba(0,0,0,0.3)',
-              transition: 'all 0.2s ease-in-out'
-            },
-            borderRadius: '25px',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-            transition: 'all 0.2s ease-in-out'
+            color: '#263238',
+            textAlign: 'center',
+            marginBottom: 4,
+            textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
+            fontFamily: 'Arial, sans-serif',
           }}
         >
-          Calculate Estimate
-        </Button>
-      </Box>
+          Cost By Resource Allocation
+        </Typography>
 
-      {renderReport()}
+        {totalCostDisplay}
+        {saveReportButton}
 
-      {isEstimateCalculated && costData.length > 0 && (
-        <Box sx={{ mt: 4 }} id="cost-breakdown-chart">
-          <Typography variant="h4" sx={{ textAlign: 'center', marginBottom: 2 }}>
-            Cost Breakdown
-          </Typography>
-          <CostBreakdownChart data={costData} />
+        <TableContainer component={Paper} sx={tableStyles}>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1' }}>Resource</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1' }}>Quantity</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1', textAlign: 'center' }}>Quality</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', color: '#ffffff', backgroundColor: '#0d47a1' }}>Amount</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {resourcesData.map((row) => (
+                <TableRow key={row.id} sx={{ '&:nth-of-type(odd)': { backgroundColor: '#f5f5f5' } }}>
+                  <TableCell component="th" scope="row" sx={{ color: '#45591c', borderBottom: '1px solid #ccc' }}>
+                    {row.resource}
+                  </TableCell>
+                  <TableCell sx={{ color: '#45591c', borderBottom: '1px solid #ccc' }}>{row.quantity}</TableCell>
+                  <TableCell sx={{ color: '#45591c', borderBottom: '1px solid #ccc', minWidth: '300px' }}>
+                    <RadioGroup
+                      value={selectedQuality[row.id] || ''}
+                      onChange={(event) => handleQualityChange(row.id, event.target.value)}
+                      row
+                      sx={{
+                        justifyContent: 'space-between',
+                        '& .MuiFormControlLabel-root': {
+                          margin: '0 8px'
+                        }
+                      }}
+                    >
+                      <FormControlLabel value="Basic" control={<Radio />} label="Basic" />
+                      <FormControlLabel value="Moderate" control={<Radio />} label="Moderate" />
+                      <FormControlLabel value="Premium" control={<Radio />} label="Premium" />
+                    </RadioGroup>
+                  </TableCell>
+                  <TableCell sx={{ color: '#45591c', borderBottom: '1px solid #ccc' }}>
+                    ₹{row.amount.toLocaleString()}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Button
+            variant="contained"
+            onClick={handleCalculateEstimate}
+            sx={{
+              backgroundColor: '#9c27b0',
+              color: 'white',
+              padding: '12px 32px',
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#7b1fa2',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 12px rgba(0,0,0,0.3)',
+                transition: 'all 0.2s ease-in-out'
+              },
+              borderRadius: '25px',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+              transition: 'all 0.2s ease-in-out'
+            }}
+          >
+            Calculate Estimate
+          </Button>
         </Box>
-      )}
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        {renderReport()}
+
+        {isEstimateCalculated && costData.length > 0 && (
+          <Box sx={{ mt: 4 }} id="cost-breakdown-chart">
+            <Typography variant="h4" sx={{ textAlign: 'center', marginBottom: 2 }}>
+              Cost Breakdown
+            </Typography>
+            <CostBreakdownChart data={costData} />
+          </Box>
+        )}
+
+        {confirmationDialog}
+      </Container>
     </Box>
   );
 };

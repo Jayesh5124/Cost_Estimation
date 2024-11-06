@@ -125,6 +125,8 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
               : report
           )
         );
+
+        
         
         setSnackbarMessage('Successfully notified constructor!');
         setSnackbarSeverity('success');
