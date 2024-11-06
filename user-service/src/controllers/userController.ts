@@ -37,7 +37,7 @@ const sendResponse = (res: Response, status: number, data: any) => {
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, projectId } = req.body;
+    const { name, email, password } = req.body;
 
     // Validate required fields
     if (!email?.trim() || !password?.trim() || !name?.trim()) {
@@ -45,7 +45,7 @@ export const createUser = async (req: Request, res: Response) => {
     }
 
     // Call UserService to create the user
-    const user = await userService.createUser({ name, email, password, projectId });
+    const user = await userService.createUser({ name, email, password });
 
     // Send response with user details excluding password
     sendResponse(res, 201, user);

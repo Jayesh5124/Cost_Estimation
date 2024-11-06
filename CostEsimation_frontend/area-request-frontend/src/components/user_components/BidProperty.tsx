@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination, Modal, Paper, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination, Modal, Paper, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Grid } from '@mui/material';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
@@ -43,7 +43,7 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
       console.log(sessionStorage.getItem('userEmail'));
       
       try {
-        const response = await axios.get(`http://localhost:3006/api/reports/email/${sessionStorage.getItem('userEmail')}`);
+        const response = await axios.get(`http://localhost:3006/api/reports/client/${sessionStorage.getItem('userEmail')}`);
         setReports(response.data.data);
       } catch (error) {
         console.error('Error fetching reports:', error);
@@ -75,11 +75,10 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
     setCurrentPage(page > totalPages ? totalPages : page);
   };
 
-  const handleOpenModal = async (clientEmail: string) => {
+  const handleOpenModal = async (reportId: string) => {
     try {
-      const response = await axios.get(`http://localhost:3006/api/reports/email/${clientEmail}`);
-      const reportData = response.data.data.find((report: Report) => report.clientEmail === clientEmail);
-      setSelectedReport(reportData);
+      const response = await axios.get(`http://localhost:3006/api/reports/${reportId}`);
+      setSelectedReport(response.data.data);
       setModalOpen(true);
     } catch (error) {
       console.error('Error fetching report details:', error);
@@ -109,8 +108,12 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
   const handleConfirmStartBuilding = async () => {
     setConfirmDialogOpen(false);
     try {
+      console.log(selectedReportId);
+      
       const response = await axios.get(`http://localhost:3006/api/reports/${selectedReportId}`);
-      const fetchedMongoId = response.data.mongoId;
+      const reportData = response.data.data;
+      const fetchedMongoId = reportData.mongoId;
+      
 
       const response2 = await axios.put(`http://localhost:3003/api/area-requests/${fetchedMongoId}`);
       
@@ -150,23 +153,31 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
     <Box sx={{ padding: 2, background: 'linear-gradient(to right, #f8f9fa, #e0f7fa)', minHeight: '100vh' }}>
       {/* Page Heading */}
       <Typography
-        variant="h3"
+        variant="h4"
         sx={{
-          fontWeight: 'bold',
-          color: '#0d47a1',
+          fontWeight: 700,
+          color: '#1976d2',
           textAlign: 'center',
-          marginBottom: 4,
-          textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
-          fontFamily: 'Arial, sans-serif',
+          mb: 3,
+          pt: 3,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
         }}
       >
-        Estimated Property
+        Estimated Properties
       </Typography>
 
       {/* Search Box */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        mb: 4,
+        mt: 2
+      }}>
         <TextField
-          label="Search by Name or Built-Up Area"
+          label="Search by Email or Built-Up Area"
           variant="outlined"
           value={searchTerm}
           onChange={(e) => {
@@ -174,11 +185,10 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
             handleSearch();
           }}
           sx={{
-            width: '300px',
-            mr: 2,
+            width: '400px',
             '& .MuiOutlinedInput-root': {
-              borderRadius: '20px',
-              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+              borderRadius: '12px',
+              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.05)',
               backgroundColor: '#fff',
               '& fieldset': { borderColor: '#1976d2' },
               '&:hover fieldset': { borderColor: '#0d47a1' },
@@ -211,72 +221,156 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
           key={report._id}
           sx={{
             display: 'flex',
-            mb: 3,
-            p: 3,
-            alignItems: 'center',
-            borderRadius: 3,
-            background: 'linear-gradient(to right,#919191, #f1f1f1)',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-            transition: 'transform 0.2s ease-in-out',
-            '&:hover': { transform: 'scale(1.03)', boxShadow: '0 12px 28px rgba(0, 0, 0, 0.2)' },
+            mb: 2,
+            p: 2,
+            alignItems: 'stretch',
+            borderRadius: '12px',
+            maxWidth: '1000px',
+            margin: '0 auto 16px',
+            background: '#ffffff',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              transform: 'translateY(-3px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
+            },
           }}
         >
-          <Box sx={{ display: 'flex', width: '30%', alignItems: 'center' }}>
-            <Icon sx={{ fontSize: 60, color: 'black', marginRight: 2 }}>
-              <HomeWorkIcon fontSize="inherit" />
-            </Icon>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#181a1a' }}>{report.clientEmail}</Typography>
-              <Typography variant="body2" sx={{ color: '#4e342e', mt: 1 }}>Built-up Area: {report.builtupArea} sq ft</Typography>
-              <Typography variant="body2" sx={{ color: '#4e342e' }}>Total Cost: ₹{report.totalCost}</Typography>
-              <Typography variant="body2" sx={{ color: '#45591c' }}>Created: {new Date(report.createdAt).toLocaleDateString()}</Typography>
-              <Typography variant="body2" sx={{ color: '#45591c' }}>Estimated By: {report.constructorEmail}</Typography>
+          <Box sx={{ 
+            display: 'flex', 
+            width: '70%',
+            alignItems: 'center',
+            position: 'relative',
+            pr: 3,
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              right: 0,
+              height: '100%',
+              width: '1px',
+              background: '#e0e0e0',
+            }
+          }}>
+            <Box sx={{
+              backgroundColor: 'rgba(25, 118, 210, 0.1)',
+              borderRadius: '8px',
+              p: 1,
+              mr: 2,
+              display: 'flex',
+              alignItems: 'center',
+            }}>
+              <HomeWorkIcon sx={{ 
+                fontSize: 40,
+                color: '#1976d2'
+              }} />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 600,
+                  color: '#2c3e50',
+                  mb: 1,
+                  fontSize: '1.1rem'
+                }}
+              >
+                Estimated Property Report
+              </Typography>
+              <Grid container spacing={1}>
+                <Grid item xs={12} sm={6} sx={{
+                  borderRight: '1px solid #e0e0e0',
+                  pr: 2
+                }}>
+                  <Typography sx={{ 
+                    color: '#34495e',
+                    fontSize: '0.9rem',
+                    mb: 0.5
+                  }}>
+                    <strong>Client:</strong> {report.clientEmail}
+                  </Typography>
+                  <Typography sx={{ 
+                    color: '#34495e',
+                    fontSize: '0.9rem',
+                    mb: 0.5
+                  }}>
+                    <strong>Constructor:</strong> {report.constructorEmail}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6} sx={{ pl: 2 }}>
+                  <Typography sx={{ 
+                    color: '#34495e',
+                    fontSize: '0.9rem',
+                    mb: 0.5
+                  }}>
+                    <strong>Built-up Area:</strong> {report.builtupArea} sq ft
+                  </Typography>
+                  <Typography sx={{ 
+                    color: '#34495e',
+                    fontSize: '0.9rem',
+                    mb: 0.5
+                  }}>
+                    <strong>Total Cost:</strong> ₹{report.totalCost?.toLocaleString()}
+                  </Typography>
+                  <Typography sx={{ 
+                    color: '#34495e',
+                    fontSize: '0.9rem',
+                    mb: 0.5
+                  }}>
+                    <strong>Created:</strong> {new Date(report.createdAt).toLocaleDateString()}
+                  </Typography>
+                </Grid>
+              </Grid>
             </Box>
           </Box>
 
-          <CardContent sx={{ flexGrow: 1, ml: 3, borderLeft: '1px solid #b0bec5', pl: 3 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#181a1a' }}>Property Details</Typography>
-            <Typography variant="body2" sx={{ color: '#37474f', mb: 1 }}>
-              {report.resourcesData.length} resources available
-            </Typography>
+          <CardContent sx={{ 
+            width: '30%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 2,
+            py: 1,
+            pl: 3
+          }}>
             <Button
               variant="outlined"
-              onClick={() => handleOpenModal(report.clientEmail)}
+              fullWidth
+              onClick={() => handleOpenModal(report._id)}
               sx={{
-                color: '#0288d1',
-                borderColor: '#0288d1',
+                borderRadius: '6px',
+                textTransform: 'none',
+                color: '#1976d2',
+                borderColor: '#1976d2',
+                py: 1,
                 '&:hover': {
-                  backgroundColor: '#0288d1',
-                  color: '#fff',
-                  boxShadow: '0 4px 10px rgba(2, 136, 209, 0.3)',
+                  backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                  borderColor: '#1976d2',
                 },
               }}
             >
               View Details
             </Button>
-          </CardContent>
-
-          <Box sx={{ textAlign: 'right', minWidth: '150px' }}>
+            
             <Button
               variant="contained"
+              fullWidth
               onClick={() => handleStartBuildingClick(report._id)}
               disabled={report.isStarted}
               sx={{
-                px: 3,
-                py: 1.5,
-                fontWeight: 'bold',
-                borderRadius: '8px',
-                backgroundColor: report.isStarted ? 'gray' : 'black',
-                boxShadow: '0px 6px 16px rgba(255, 112, 67, 0.4)',
+                borderRadius: '6px',
+                backgroundColor: report.isStarted ? '#9e9e9e' : '#1976d2',
+                color: 'white',
+                textTransform: 'none',
+                py: 1,
                 '&:hover': {
-                  backgroundColor: report.isStarted ? 'gray' : 'darkgray',
-                  boxShadow: '0px 8px 20px rgba(230, 74, 25, 0.6)',
+                  backgroundColor: report.isStarted ? '#9e9e9e' : '#1565c0',
                 },
               }}
             >
               {report.isStarted ? 'Constructor Notified' : 'Start Building'}
             </Button>
-          </Box>
+          </CardContent>
         </Card>
       ))}
 
@@ -337,7 +431,7 @@ const PropertyBid: React.FC<PropertyBidProps> = ({ onViewDetails, onEstimate }) 
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
                   Resources
                 </Typography>
-                {selectedReport.resourcesData.map((resource: any, index: number) => (
+                {selectedReport?.resourcesData?.map((resource: any, index: number) => (
                   <Paper key={index} sx={{ p: 2, mb: 2, bgcolor: '#f5f5f5' }}>
                     <Typography><strong>Resource Name:</strong> {resource.resource}</Typography>
                     <Typography><strong>Quantity:</strong> {resource.quantity}</Typography>

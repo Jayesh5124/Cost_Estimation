@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination, Tooltip, Badge, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Typography, Button, Card, CardContent, Icon, TextField, Pagination, Tooltip, Badge, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, Grid, Snackbar, Alert } from '@mui/material';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -29,6 +29,8 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Property[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [estimatingId, setEstimatingId] = useState('');
 
   useEffect(() => {
     const checkBuildingRequests = async () => {
@@ -104,6 +106,9 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
 
   const handleEstimate = async (property: Property) => {
     try {
+      setEstimatingId(property._id);
+      setOpenSnackbar(true);
+
       const type = getCityType(property.city);
       const response = await axios.post(`http://localhost:3005/api/cost-estimates/calculate/${property.builtup_area}/${type}`, {
         builtup_area: property.builtup_area,
@@ -143,9 +148,29 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
   return (
     <Box sx={{ padding: 2, background: 'linear-gradient(to right, #f8f9fa, #e0f7fa)', minHeight: '100vh' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="info" sx={{ width: '100%' }}>
+          Estimating property for ID: {estimatingId}
+        </Alert>
+      </Snackbar>
+
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        mb: 3,
+        gap: 2  // Add spacing between elements
+      }}>
         {notifications.length > 0 && (
           <Badge badgeContent={notifications.length} color="error">
             <Tooltip title="Construction Requests">
@@ -153,7 +178,6 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
                 sx={{
                   fontSize: 30,
                   color: '#1976d2',
-                  marginRight: 1,
                   cursor: 'pointer',
                 }}
                 onClick={handleIconClick}
@@ -163,6 +187,7 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
             </Tooltip>
           </Badge>
         )}
+        
         <TextField
           label="Search by Name or Built-Up Area"
           variant="outlined"
@@ -170,7 +195,6 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
           onChange={(e) => setSearchTerm(e.target.value)}
           sx={{
             width: '300px',
-            mr: 2,
             '& .MuiOutlinedInput-root': {
               borderRadius: '20px',
               boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
@@ -184,14 +208,13 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
             },
           }}
         />
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3, ml: 10 }}>
-          <Pagination
-            count={totalPages}
-            page={currentPage}
-            onChange={handlePageChange}
-            color="primary"
-          />
-        </Box>
+        
+        <Pagination
+          count={totalPages}
+          page={currentPage}
+          onChange={handlePageChange}
+          color="primary"
+        />
       </Box>
 
       <Dialog open={isModalOpen} onClose={handleCloseModal} maxWidth="md" fullWidth>
@@ -242,71 +265,149 @@ const PropertyListing: React.FC<PropertyListingProps> = ({ properties, onEstimat
           key={property._id}
           sx={{
             display: 'flex',
-            mb: 3,
-            p: 3,
-            alignItems: 'center',
-            borderRadius: 3,
-            background: 'linear-gradient(to right,#919191, #f1f1f1)',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-            transition: 'transform 0.2s ease-in-out',
-            '&:hover': { transform: 'scale(1.03)', boxShadow: '0 12px 28px rgba(0, 0, 0, 0.2)' },
+            mb: 2,
+            p: 2,
+            alignItems: 'stretch',
+            borderRadius: '12px',
+            maxWidth: '1000px',
+            margin: '0 auto 16px',
+            background: '#ffffff',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              transform: 'translateY(-3px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
+            },
           }}
         >
-          <Box sx={{ display: 'flex', width: '30%', alignItems: 'center' }}>
-            <Icon sx={{ fontSize: 60, color: 'black', marginRight: 2 }}>
-              <HomeWorkIcon fontSize="inherit" />
-            </Icon>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#181a1a' }}>{property.property_name || 'N/A'}</Typography>
-              <Typography variant="body2" sx={{ color: '#45591c' }}>{property.state}</Typography>
-              <Typography variant="body2" sx={{ color: '#45591c' }}>{property.city}</Typography>
-              <Typography variant="body2" sx={{ color: '#4e342e', mt: 1 }}>Built-up Area: {property.builtup_area}</Typography>
-              <Typography variant="body2" sx={{ color: '#4e342e' }}>Owner: {property.user_name}</Typography>
+          <Box sx={{ 
+            display: 'flex', 
+            width: '70%',
+            alignItems: 'center',
+            position: 'relative',
+            pr: 3,
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              right: 0,
+              height: '100%',
+              width: '1px',
+              background: '#e0e0e0',
+            }
+          }}>
+            <Box sx={{
+              backgroundColor: 'rgba(25, 118, 210, 0.1)',
+              borderRadius: '8px',
+              p: 1,
+              mr: 2,
+              display: 'flex',
+              alignItems: 'center',
+            }}>
+              <HomeWorkIcon sx={{ 
+                fontSize: 40,
+                color: '#1976d2'
+              }} />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 600,
+                  color: '#2c3e50',
+                  mb: 1,
+                  fontSize: '1.1rem'
+                }}
+              >
+                {property.property_name || 'Unnamed Property'}
+              </Typography>
+              <Grid container spacing={1}>
+                <Grid item xs={12} sm={6} sx={{
+                  borderRight: '1px solid #e0e0e0',
+                  pr: 2
+                }}>
+                  <Typography sx={{ 
+                    color: '#34495e',
+                    fontSize: '0.9rem',
+                    mb: 0.5
+                  }}>
+                    <strong>Owner:</strong> {property.user_name}
+                  </Typography>
+                  <Typography sx={{ 
+                    color: '#34495e',
+                    fontSize: '0.9rem',
+                    mb: 0.5
+                  }}>
+                    <strong>Email:</strong> {property.user_email}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6} sx={{ pl: 2 }}>
+                  <Typography sx={{ 
+                    color: '#34495e',
+                    fontSize: '0.9rem',
+                    mb: 0.5
+                  }}>
+                    <strong>Location:</strong> {`${property.city}, ${property.state}`}
+                  </Typography>
+                  <Typography sx={{ 
+                    color: '#34495e',
+                    fontSize: '0.9rem',
+                    mb: 0.5
+                  }}>
+                    <strong>Built-up Area:</strong> {`${property.builtup_area} sq ft`}
+                  </Typography>
+                </Grid>
+              </Grid>
             </Box>
           </Box>
 
-          <CardContent sx={{ flexGrow: 1, ml: 3, borderLeft: '1px solid #b0bec5', pl: 3 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#181a1a' }}>Property Details</Typography>
-            <Typography variant="body2" sx={{ color: '#37474f', mb: 1 }}>
-              Explore detailed information about the property.
-            </Typography>
+          <CardContent sx={{ 
+            width: '30%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 2,
+            py: 1,
+            pl: 3
+          }}>
             <Button
               variant="outlined"
+              fullWidth
+              startIcon={<Icon>visibility</Icon>}
               sx={{
-                color: '#0288d1',
-                borderColor: '#0288d1',
+                borderRadius: '6px',
+                textTransform: 'none',
+                color: '#1976d2',
+                borderColor: '#1976d2',
+                py: 1,
                 '&:hover': {
-                  backgroundColor: '#0288d1',
-                  color: '#fff',
-                  boxShadow: '0 4px 10px rgba(2, 136, 209, 0.3)',
+                  backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                  borderColor: '#1976d2',
                 },
               }}
               onClick={() => handleViewDetails(property._id)}
             >
               View Details
             </Button>
-          </CardContent>
-
-          <Box sx={{ textAlign: 'right', minWidth: '150px' }}>
+            
             <Button
               variant="contained"
+              fullWidth
               sx={{
-                px: 3,
-                py: 1.5,
-                fontWeight: 'bold',
-                borderRadius: '8px',
-                backgroundColor: 'black',
-                boxShadow: '0px 6px 16px rgba(255, 112, 67, 0.4)',
+                borderRadius: '6px',
+                backgroundColor: '#1976d2',
+                color: 'white',
+                textTransform: 'none',
+                py: 1,
                 '&:hover': {
-                  backgroundColor: 'gray',
-                  boxShadow: '0px 8px 20px rgba(230, 74, 25, 0.6)',
+                  backgroundColor: '#1565c0',
                 },
               }}
               onClick={() => handleEstimate(property)}
             >
               Estimate
             </Button>
-          </Box>
+          </CardContent>
         </Card>
       ))}
     </Box>

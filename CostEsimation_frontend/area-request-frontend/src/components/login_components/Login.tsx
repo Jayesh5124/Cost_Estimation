@@ -1,4 +1,4 @@
-import { Box, Typography, TextField, Button, Radio, RadioGroup, FormControlLabel, Link } from '@mui/material';
+import { Box, Typography, TextField, Button, Radio, RadioGroup, FormControlLabel, Link, Snackbar, Alert } from '@mui/material';
 import axios from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -23,17 +23,20 @@ const LoginForm: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth(); // Use the context
+  const [openToast, setOpenToast] = useState(false);
 
   const handleLogin = async () => {
     try {
-      const response=await login(email, password, userType); // Call login from context
-   
-      alert(`Login successful! Welcome ${userType}`);
+      const response = await login(email, password, userType);
+      setOpenToast(true); // Show success toast
       console.log(response);
       
-      navigate(userType === 'user' ? '/property_details' : '/list_property');
+      // Wait a brief moment before navigation to show the toast
+      setTimeout(() => {
+        navigate(userType === 'user' ? '/property_details' : '/list_property');
+      }, 1500);
     } catch (error) {
-      setError('Invalid email or AA password');
+      setError('Invalid email or password');
     }
   };
 
@@ -83,6 +86,17 @@ const LoginForm: React.FC = () => {
           </Typography>
         )}
       </Box>
+      
+      <Snackbar
+        open={openToast}
+        autoHideDuration={1500}
+        onClose={() => setOpenToast(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="success" sx={{ width: '100%' }}>
+          Login successful! Welcome {userType}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

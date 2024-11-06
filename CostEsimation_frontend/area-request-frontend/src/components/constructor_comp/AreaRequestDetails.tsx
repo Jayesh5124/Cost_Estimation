@@ -6,23 +6,43 @@ import { Property } from '../types/Property';
 // Define styles for the component
 const styles = {
     container: {
-        minHeight: '100vh', // Make the container full height
-        background: 'linear-gradient(to right, #f8f9fa, #e0f7fa)', // Gradient background
-        padding: '20px',
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8f9fa 0%, #e0f7fa 100%)',
+        padding: '40px 20px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
     },
     paper: {
-        padding: '20px',
+        padding: '32px',
         marginTop: '20px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+        borderRadius: '16px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+        maxWidth: '800px',
+        width: '100%',
+        background: 'rgba(255, 255, 255, 0.95)',
     },
     title: {
-        marginBottom: '15px',
+        marginBottom: '24px',
         fontWeight: 'bold',
-        color: '#00796b', // Custom title color
+        color: '#1a237e',
+        borderBottom: '2px solid #e0e0e0',
+        paddingBottom: '16px',
     },
     detailText: {
-        marginBottom: '10px',
+        marginBottom: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+    },
+    label: {
+        minWidth: '160px',
+        color: '#546e7a',
+        fontWeight: 500,
+    },
+    value: {
+        color: '#263238',
+        flex: 1,
     },
 };
 
@@ -48,15 +68,38 @@ const PropertyDetail: React.FC<{ properties: Property[] }> = ({ properties }) =>
                 <Typography variant="h4" style={styles.title}>
                     {property.property_name}
                 </Typography>
-                <Typography variant="body1" style={styles.detailText}><strong>Owner:</strong> {property.user_name}</Typography>
-                <Typography variant="body1" style={styles.detailText}><strong>Email:</strong> {property.user_email}</Typography>
-                <Typography variant="body1" style={styles.detailText}><strong>City:</strong> {property.city}</Typography>
-                <Typography variant="body1" style={styles.detailText}><strong>State:</strong> {property.state}</Typography>
-                <Typography variant="body1" style={styles.detailText}><strong>Built-up Area:</strong> {property.builtup_area} sq ft</Typography>
-                <Typography variant="body1" style={styles.detailText}><strong>Property Type:</strong> {property.property_type}</Typography>
-                <Typography variant="body1" style={styles.detailText}><strong>Land Clearance Needed:</strong> {property.land_clearance_needed ? 'Yes' : 'No'}</Typography>
-                <Typography variant="body1" style={styles.detailText}><strong>Floors Needed:</strong> {property.floors_needed}</Typography>
-                {/* Additional properties can be rendered here */}
+                <Typography variant="body1" style={styles.detailText}>
+                    <span style={styles.label}>Owner</span>
+                    <span style={styles.value}>{property.user_name}</span>
+                </Typography>
+                <Typography variant="body1" style={styles.detailText}>
+                    <span style={styles.label}>Email</span>
+                    <span style={styles.value}>{property.user_email}</span>
+                </Typography>
+                <Typography variant="body1" style={styles.detailText}>
+                    <span style={styles.label}>City</span>
+                    <span style={styles.value}>{property.city}</span>
+                </Typography>
+                <Typography variant="body1" style={styles.detailText}>
+                    <span style={styles.label}>State</span>
+                    <span style={styles.value}>{property.state}</span>
+                </Typography>
+                <Typography variant="body1" style={styles.detailText}>
+                    <span style={styles.label}>Built-up Area</span>
+                    <span style={styles.value}>{property.builtup_area} sq ft</span>
+                </Typography>
+                <Typography variant="body1" style={styles.detailText}>
+                    <span style={styles.label}>Property Type</span>
+                    <span style={styles.value}>{property.property_type}</span>
+                </Typography>
+                <Typography variant="body1" style={styles.detailText}>
+                    <span style={styles.label}>Land Clearance</span>
+                    <span style={styles.value}>{property.land_clearance_needed ? 'Yes' : 'No'}</span>
+                </Typography>
+                <Typography variant="body1" style={styles.detailText}>
+                    <span style={styles.label}>Floors Needed</span>
+                    <span style={styles.value}>{property.floors_needed}</span>
+                </Typography>
             </Paper>
         </Container>
     );
